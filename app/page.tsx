@@ -1,7 +1,9 @@
-import Image from 'next/image';
+import CodeInput from './CodeInput';
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24"></main>
+    <main className="w-full h-full flex items-center justify-center">
+      <CodeInput />
+    </main>
   );
 }

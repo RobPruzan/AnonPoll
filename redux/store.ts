@@ -26,36 +26,32 @@ import { Meta, SocketAction } from '@/lib/types';
 //   };z algo
 // }
 
-// export const socketMiddleware =
-//   (socketManager: SocketIO): Middleware<{}, any> =>
-//   ({
-//     dispatch,
-//     getState,
-//   }: {
-//     dispatch: typeof store.dispatch;
-//     getState: typeof store.getState;
-//   }) =>
-//   (next) =>
-//   (action: SocketAction & { meta: Meta | undefined }) => {
-//     const isSharedAction =
-//       action.type.startsWith('canvas/') ||
-//       action.type.startsWith('collaborationState/');
+export const socketMiddleware =
+  (socketManager: SocketIO): Middleware<{}, any> =>
+  ({
+    dispatch,
+    getState,
+  }: {
+    dispatch: typeof store.dispatch;
+    getState: typeof store.getState;
+  }) =>
+  (next) =>
+  (action: SocketAction & { meta: Meta | undefined }) => {
+    switch (action.type) {
+    }
 
-//     switch (action.type) {
-//     }
+    return next(action);
+  };
 
-//     return next(action);
-//   };
+export const store = configureStore({
+  reducer: {},
 
-// export const store = configureStore({
-//   reducer: {},
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(socketMiddleware(socketManager)),
+});
 
-//   middleware: (getDefaultMiddleware) =>
-//     getDefaultMiddleware().concat(socketMiddleware(socketManager)),
-// });
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
 
-// export type RootState = ReturnType<typeof store.getState>;
-// export type AppDispatch = typeof store.dispatch;
-
-// export const useAppDispatch: () => AppDispatch = useDispatch;
-// export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+export const useAppDispatch: () => AppDispatch = useDispatch;
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;

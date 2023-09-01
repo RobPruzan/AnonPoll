@@ -17,6 +17,7 @@ import { match } from 'ts-pattern';
 import { io } from 'socket.io-client';
 import { pollSlice } from './slices/pollSlice';
 import { z } from 'zod';
+import { NetworkActions, networkSlice } from './slices/networkSlice';
 
 export function withMeta<TPayload, TState>(
   reducer: (
@@ -68,6 +69,14 @@ export const socketMiddleware =
 
         const socket = action.meta.socket;
         new Promise((resolve, reject) => {
+          dispatch(
+            NetworkActions.setRoomState({
+              isError: false,
+              isLoading: true,
+              isSuccess: false,
+            })
+          );
+
           socket.emit(
             'join room',
             payloadParsed.data.roomID,
@@ -84,6 +93,22 @@ export const socketMiddleware =
           if (typeof roomID === 'string') {
             // set the roomID ...
             console.log('got the room ID!->', roomID);
+            dispatch(
+              NetworkActions.setRoomState({
+                isError: false,
+                isLoading: false,
+                isSuccess: true,
+              })
+            );
+            setTimeout(() => {
+              dispatch(
+                NetworkActions.setRoomState({
+                  isError: false,
+                  isLoading: false,
+                  isSuccess: false,
+                })
+              );
+            }, 3000);
           }
         });
       })
@@ -101,6 +126,7 @@ export const socketMiddleware =
 export const store = configureStore({
   reducer: {
     poll: pollSlice.reducer,
+    network: networkSlice.reducer,
   },
 
   middleware: (getDefaultMiddleware) =>

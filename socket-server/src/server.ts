@@ -29,7 +29,6 @@ io.on('connect', (socket) => {
     socket.join(roomID);
     socket.emit('send user data', socket.id);
     console.log('User joined room, user id is:', socket.id);
-    console.log('what is this', acknowledge);
     acknowledge(roomID);
   });
 

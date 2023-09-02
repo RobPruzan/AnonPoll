@@ -13,7 +13,7 @@ export const POST = async (req: NextRequest) => {
       { status: 200 }
     );
   }
-  // console.log('incoming!', req);
+
   const json = await req.json();
 
   console.log('incoming!!', json);

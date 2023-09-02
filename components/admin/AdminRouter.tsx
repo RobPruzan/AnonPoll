@@ -5,14 +5,13 @@ import React, { useContext } from 'react';
 import AdminLogin from './AdminLogin';
 import AdminPolls from './AdminPolls';
 import { usePathname } from 'next/navigation';
-
-type Props = {};
+import RoomCreate from './RoomCreate';
 
 const AdminRouter = () => {
   const roomID = usePathname;
   const userContext = useUserContext();
   return match(userContext.user.role)
-    .with('admin', () => <>stuff</>)
+    .with('admin', () => <RoomCreate />)
     .with('user', () => <AdminLogin />)
     .exhaustive();
 };

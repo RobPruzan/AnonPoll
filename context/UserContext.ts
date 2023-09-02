@@ -1,7 +1,16 @@
-import { createContext, useContext, MutableRefObject, useState } from 'react';
+import { Role, User } from '@/shared/types';
+import {
+  createContext,
+  useContext,
+  MutableRefObject,
+  useState,
+  SetStateAction,
+  Dispatch,
+} from 'react';
 
 type UserContextType = {
-  id: string | null;
+  user: User;
+  setUser: Dispatch<SetStateAction<User>>;
 };
 
 export const UserContext = createContext<UserContextType | null>(null);

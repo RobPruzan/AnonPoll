@@ -1,6 +1,9 @@
+import { SocketContext } from '@/context/SocketContext';
 import { useUserContext } from '@/context/UserContext';
-import { Meta } from '@/lib/types';
+import { Meta } from '@/shared/types';
+
 import { useRouter } from 'next/navigation';
+import { useContext } from 'react';
 import { useDispatch } from 'react-redux';
 import { io } from 'socket.io-client';
 
@@ -8,26 +11,23 @@ export const useSocketConnect = () => {
   const router = useRouter();
   const userContext = useUserContext();
   const dispatch = useDispatch();
-  const envURL = process.env.NEXT_PUBLIC_SOCKET_SERVER_URL;
+  const socketContext = useContext(SocketContext);
 
-  if (!envURL) {
-    throw new Error('No socket URL...');
-  }
   return (roomID: string) => {
     const meta: Meta = {
       socketMeta: {
-        socket: io(envURL),
+        socket: socketContext?.socketRef?.current,
         routeCB: () => router.push(`/polls/${roomID}`),
       },
-      userID: userContext.id,
-      pollID: null,
+      userID: userContext.user.id,
+      roomID: null,
     };
 
     dispatch({
       type: 'connect',
       payload: {
         roomID,
-        userID: userContext.id,
+        userID: userContext.user.id,
       },
       meta,
     });

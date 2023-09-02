@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { useUserContext } from '@/context/UserContext';
 import { useInterval } from '@/hooks/useInterval';
 import { useSocketConnect } from '@/hooks/useSocketConnect';
-import { Meta } from '@/lib/types';
+
 import { useAppSelector } from '@/redux/store';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';

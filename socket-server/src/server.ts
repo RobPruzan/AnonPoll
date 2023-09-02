@@ -57,35 +57,41 @@ class BetterMap<TKey, TValue> extends Map<TKey, TValue> {
   }
 }
 
-const activeRooms = new BetterMap<string, Room>();
+// const activeRooms = new BetterMap<string, Room>();
 
 io.on('connect', (socket) => {
   socket.on(
     'join room',
     (roomID: string, userID: string, acknowledge: ConnectAck) => {
-      activeRooms.setIfAbsent(
-        roomID,
-        {
-          code: roomID,
-          polls: [],
-          user_ids: [userID],
-        },
-        (existingVal) => {
-          existingVal.user_ids.push(userID);
-        }
-      );
+      // activeRooms.setIfAbsent(
+      //   roomID,
+      //   {
+      //     roomID: roomID,
+      //     polls: [],
+      //     user_ids: [userID],
+      //   },
+      //   (existingVal) => {
+      //     existingVal.user_ids.push(userID);
+      //   }
+      // );
       socket.join(roomID);
       socket.emit('send user data', socket.id);
       console.log('User joined room, user id is:', socket.id);
-      activeRooms.getAndThen(roomID, (value) => {
-        acknowledge(value);
-      });
+      // activeRooms.getAndThen(roomID, (value) => {
+      //   acknowledge(value);
+      // });
     }
   );
 
-  // socket.on('sent user data', (data: Data, socketID, acknowledge) => {
-  //   io.to(socketID).emit(JSON.stringify(data));
-  // });
+  socket.on('action', (action: SocketAction) => {
+    console.log('emitting the following action', action);
+    // action.meta.fromServer = true;
+    socket.broadcast.to(action.meta.roomID).emit('shared action', action);
+  });
+
+  socket.on('transfer over data', (room: Room) => {
+    socket.emit('sync with master', room);
+  });
 });
 
 const port = process.env.PORT || 8080;

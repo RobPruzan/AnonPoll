@@ -1,4 +1,6 @@
 import { UserContext, useUserContext } from '@/context/UserContext';
+import { User } from '@/shared/types';
+
 import React, { useState } from 'react';
 
 type Props = {
@@ -6,11 +8,15 @@ type Props = {
 };
 
 const UserProvider = ({ children }: Props) => {
-  const [userID] = useState(crypto.randomUUID());
+  const [user, setUser] = useState<User>({
+    id: crypto.randomUUID(),
+    role: 'user',
+  });
   return (
     <UserContext.Provider
       value={{
-        id: userID,
+        setUser,
+        user,
       }}
     >
       {children}

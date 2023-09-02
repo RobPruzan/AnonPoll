@@ -12,13 +12,13 @@ import {
 } from 'react-redux';
 
 import { SocketIO, socketManager } from '@/socket-client/socket';
-import { FirstParameter, Meta, SocketAction } from '@/lib/types';
+import { FirstParameter, OnCB, SocketAction } from '@/lib/types';
 import { match } from 'ts-pattern';
 import { io } from 'socket.io-client';
 import { RoomsActions, roomsSlice } from './slices/roomsSlice';
 import { z } from 'zod';
 import { NetworkActions, networkSlice } from './slices/networkSlice';
-import { ConnectAck, Room } from '@/shared/types';
+import { ConnectAck, Meta, Room } from '@/shared/types';
 
 export function withMeta<TPayload, TState>(
   reducer: (
@@ -42,9 +42,36 @@ export const socketMiddleware =
     getState: typeof store.getState;
   }) =>
   (next) =>
-  (action: SocketAction & { meta: Meta | undefined }) => {
+  (action: SocketAction) => {
     match(action.type)
       .with('connect', () => {
+        const socket = action.meta?.socketMeta?.socket;
+
+        if (!socket) {
+          throw new Error('Well... i need the socket to connect');
+        }
+        // if (!action.meta?.roomID) {
+        //   throw new Error('I need a room to connect...');
+        // }
+
+        socket.on('shared action', (action: SocketAction) => {
+          dispatch(action);
+        });
+
+        socket.on('send user data', () => {
+          const room = getState().rooms.items.find(
+            (item) => item.roomID === action.meta?.roomID
+          );
+          if (!room) {
+            console.error('sending user undefined data...');
+            return;
+          }
+          socket.emit('transfer over data', room);
+        });
+
+        socket.on('sync with master', (room: Room) => {
+          dispatch(RoomsActions.replaceRoom(room));
+        });
         const payloadSchema = z.object({
           userID: z.string(),
           roomID: z.string(),
@@ -53,7 +80,7 @@ export const socketMiddleware =
         if (!action.meta) {
           console.error('not sending any meta on redux connect');
         }
-        if (!action.meta.socketMeta?.socket) {
+        if (!action.meta?.socketMeta?.socket) {
           console.error('not sending socket instance in connect dispatch');
           return;
         }
@@ -62,8 +89,6 @@ export const socketMiddleware =
           console.error('connect payload is wrong');
           return;
         }
-
-        const socket = action.meta.socketMeta?.socket;
 
         new Promise<Room>((resolve, reject) => {
           dispatch(
@@ -84,8 +109,6 @@ export const socketMiddleware =
             ack
           );
         }).then((room) => {
-          // set the roomID ...
-          console.log('got the room ID!->', room);
           dispatch(RoomsActions.addRoom(room));
           dispatch(
             NetworkActions.setRoomState({
@@ -94,8 +117,7 @@ export const socketMiddleware =
               isSuccess: true,
             })
           );
-          console.log('googa', action.meta.socketMeta?.routeCB);
-          action.meta.socketMeta?.routeCB();
+          action.meta?.socketMeta?.routeCB?.();
           setTimeout(() => {
             dispatch(
               NetworkActions.setRoomState({
@@ -109,9 +131,19 @@ export const socketMiddleware =
       })
       .with('disconnect', () => {})
       .otherwise(() => {
-        // just a normal payload
-        if (action.meta && !action.meta.fromServer) {
-          // socket emit (action)
+        // just a normal payloada
+        if (action.meta?.socketMeta) {
+          const socket = action.meta.socketMeta.socket;
+          const serializableAction: SocketAction = {
+            ...action,
+            meta: {
+              roomID: action.meta.roomID,
+              userID: action.meta.userID,
+              fromServer: action.meta.fromServer,
+            },
+          };
+          socket.emit('action', serializableAction);
+        } else {
         }
       });
 
@@ -128,6 +160,7 @@ export const store = configureStore({
     getDefaultMiddleware({
       serializableCheck: {
         ignoredActions: ['connect'],
+        ignoredActionPaths: ['meta.socketMeta.socket'],
       },
     }).concat(socketMiddleware(socketManager)),
 });

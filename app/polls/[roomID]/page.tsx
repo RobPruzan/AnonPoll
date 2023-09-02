@@ -1,11 +1,11 @@
 import AdminPolls from '@/components/admin/AdminPolls';
 import { useAppSelector } from '@/redux/store';
+import { Role } from '@/shared/types';
 
 import React from 'react';
 import { match } from 'ts-pattern';
-type Role = 'admin' | 'user';
+
 const page = ({ params: { roomID } }: { params: { roomID: string } }) => {
-  console.log('heyaa', roomID);
   const userRole: Role = 'admin' as Role;
   return match(userRole)
     .with('admin', () => <AdminPolls roomID={roomID} />)

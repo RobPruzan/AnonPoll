@@ -3,9 +3,12 @@ import { type io } from 'socket.io-client';
 
 export type Meta = {
   userID: string | null;
-  pollID: string | null;
+  roomID: string | null;
   fromServer?: boolean;
-  socket?: ReturnType<typeof io>;
+  socketMeta?: {
+    socket: ReturnType<typeof io>;
+    routeCB?: () => void;
+  };
 };
 export type SocketAction = { type: string; payload: any; meta: Meta };
 
@@ -30,9 +33,11 @@ export type Poll = {
 };
 
 export type Room = {
-  code: string;
+  roomID: string;
   user_ids: Array<string>;
   polls: Array<Poll>;
 };
 
 export type ConnectAck = (value: Room) => void;
+export type Role = 'admin' | 'user';
+export type User = { id: string | null; role: Role };

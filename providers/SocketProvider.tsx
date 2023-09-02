@@ -8,9 +8,20 @@ type Props = {
 };
 
 const SocketProvider = ({ children }: Props) => {
-  const socket = useRef<ReturnType<typeof io> | null>(null);
+  const envURL = process.env.NEXT_PUBLIC_SOCKET_SERVER_URL;
+
+  if (!envURL) {
+    throw new Error('No socket URL...');
+  }
+  const socketRef = useRef<ReturnType<typeof io> | null>(io(envURL));
   return (
-    <SocketContext.Provider value={null}>{children}</SocketContext.Provider>
+    <SocketContext.Provider
+      value={{
+        socketRef,
+      }}
+    >
+      {children}
+    </SocketContext.Provider>
   );
 };
 

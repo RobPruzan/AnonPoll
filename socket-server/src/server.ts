@@ -31,9 +31,11 @@ const io = new Server(server, {
 const activeRooms = new Map<string, Array<string>>();
 
 io.on('connect', (socket) => {
+  // console.log('Connected');
   socket.on('create room', (roomID: string, acknowledge) => {
+    console.log('attempted room create');
     activeRooms.set(roomID, []);
-    acknowledge();
+    // acknowledge();
   });
   socket.on(
     'join room',
@@ -53,20 +55,17 @@ io.on('connect', (socket) => {
           },
         })
       ).map((sAction) => JSON.parse(sAction.serializedJSON) as SocketAction);
-      console.log(
-        'any actions that are connect',
-        actions.filter((a) => a.type === 'connect')
-      );
+      console.log('searched for room id', roomID);
+      console.log('sending over the following actions', actions);
       acknowledge(actions);
     }
   );
 
   socket.on('action', (action: SocketAction) => {
-    console.log('incoming action', action);
-    if (action.type === 'connect') {
+    if (action.type === 'connect' || action.type === 'join') {
       return;
     }
-    console.log('db entry for roomID:', action.meta.roomID);
+
     const res = prisma.action.create({
       data: {
         roomID: action.meta.roomID,
@@ -75,16 +74,11 @@ io.on('connect', (socket) => {
     });
 
     res.then((d) => {
-      console.log('just saved the following to the db', d);
+      console.log('created the following', d);
     });
 
     action.meta.fromServer = true;
-    action.type === 'connect' && console.log('THIS IS BROKEN');
-    console.log(
-      'broadcasting this action to the room id',
-      action,
-      action.meta.roomID
-    );
+    console.log('emitting shared action', action);
     socket.broadcast.to(action.meta.roomID).emit('shared action', action);
   });
 });

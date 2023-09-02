@@ -22,6 +22,7 @@ export const roomsSlice = createSlice({
   name: 'rooms',
   reducers: {
     addRoom: withRoomsMeta<Room>((state, action) => {
+      console.log('created room');
       state.items.push(action.payload);
     }),
     addPoll: withRoomsMeta<{ roomID: string; poll: Poll }>((state, action) => {
@@ -49,7 +50,7 @@ export const roomsSlice = createSlice({
 
     vote: withRoomsMeta<VotePayload>((state, action) => {
       const room = state.items.find((i) => i.roomID === action.payload.roomID);
-      console.log('recieved');
+
       if (!room) {
         console.error(
           'trying to vote on a room that does not exist, something went wrong'
@@ -58,9 +59,8 @@ export const roomsSlice = createSlice({
       }
 
       const poll = room.polls.find((p) => p.id === action.payload.id);
-      console.log(poll?.votes.length);
+
       poll?.votes.push(action.payload.vote);
-      console.log(poll?.votes.length);
     }),
   },
 });

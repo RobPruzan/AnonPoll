@@ -4,6 +4,8 @@ import ReduxProvider from './ReduxProvider';
 import SocketProvider from './SocketProvider';
 import UserProvider from './UserProvider';
 import TransactionQueueProvider from './TransactionQueueProvider';
+import { useConnect } from '@/hooks/useConnect';
+import ConnectProvider from './ConnectProvider';
 
 type Props = {
   children: React.ReactNode;
@@ -14,7 +16,9 @@ const RootProvider = ({ children }: Props) => {
     <TransactionQueueProvider>
       <UserProvider>
         <ReduxProvider>
-          <SocketProvider>{children}</SocketProvider>
+          <SocketProvider>
+            <ConnectProvider>{children}</ConnectProvider>
+          </SocketProvider>
         </ReduxProvider>
       </UserProvider>
     </TransactionQueueProvider>

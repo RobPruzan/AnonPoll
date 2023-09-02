@@ -56,7 +56,6 @@ export const socketMiddleware =
   (action: SocketAction) => {
     match(action.type)
       .with('connect', () => {
-        console.log('action that is type connect', action);
         const socket = action.meta?.socketMeta?.socket;
 
         if (!socket) {
@@ -64,7 +63,6 @@ export const socketMiddleware =
         }
 
         socket.on('shared action', (sharedAction: SocketAction) => {
-          console.log('received action', sharedAction);
           const isInitialized = getState().network.roomConnect.isInitialized;
           if (!action.meta?.pQueue) {
             throw new Error(
@@ -83,23 +81,30 @@ export const socketMiddleware =
           }
         });
 
+        // if (!action.meta) {
+        //   console.error('not sending any meta on redux connect');
+        // }
+        // if (!action.meta?.socketMeta?.socket) {
+        //   console.error('not sending socket instance in connect dispatch');
+        //   return;
+        // }
+      })
+      .with('join', () => {
+        const socket = action.meta?.socketMeta?.socket;
+
+        if (!socket) {
+          throw new Error('Well... i need the socket to join the room');
+        }
         const payloadSchema = z.object({
           userID: z.string(),
           roomID: z.string(),
         });
-        if (!action.meta) {
-          console.error('not sending any meta on redux connect');
-        }
-        if (!action.meta?.socketMeta?.socket) {
-          console.error('not sending socket instance in connect dispatch');
-          return;
-        }
-        const payloadParsed = payloadSchema.safeParse(action.payload);
+        console.log('actual payload (join)', action.meta);
+        const payloadParsed = payloadSchema.safeParse(action.meta);
         if (!payloadParsed.success) {
-          console.error('connect payload is wrong');
+          console.error('join payload is wrong', payloadParsed.error);
           return;
         }
-
         new Promise<Array<BaseSocketAction>>((resolve, reject) => {
           dispatch(NetworkActions.setRoomState(LOADING));
           const ack: ConnectAck = (room) => {
@@ -110,6 +115,7 @@ export const socketMiddleware =
 
             resolve(room);
           };
+          console.log('EMITTING ROOM JOIN');
           socket.emit(
             'join room',
             payloadParsed.data.roomID,
@@ -117,10 +123,8 @@ export const socketMiddleware =
             ack
           );
         }).then((actions) => {
+          console.log('resolved room join', actions);
           actions.forEach((a) => {
-            if (a.type === 'connect') {
-              console.log('fucker 1');
-            }
             dispatch(a);
           });
 
@@ -135,7 +139,6 @@ export const socketMiddleware =
       .with('disconnect', () => {})
       .otherwise(() => {
         if (action.meta?.fromServer) {
-          console.log('not dispatching an action from server');
           return;
         }
         if (action.meta?.socketMeta) {
@@ -167,7 +170,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: ['connect'],
+        ignoredActions: ['connect', 'join'],
         ignoredActionPaths: ['meta.socketMeta.socket', 'meta.pQueue'],
       },
     }).concat(socketMiddleware(socketManager)),

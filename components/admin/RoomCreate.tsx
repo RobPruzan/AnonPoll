@@ -38,13 +38,13 @@ const RoomCreate = ({}: Props) => {
               // socketContext.socketRef?.current
               socketContext?.socketRef?.current.emit(
                 'create room',
-                roomCode,
-                () => {
-                  setShowSuccess(true);
-                  setTimeout(() => {
-                    setShowSuccess(false);
-                  }, 3000);
-                }
+                roomCode
+                // () => {
+                //   setShowSuccess(true);
+                //   setTimeout(() => {
+                //     setShowSuccess(false);
+                //   }, 3000);
+                // }
               );
 
               dispatch(

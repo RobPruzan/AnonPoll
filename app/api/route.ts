@@ -5,7 +5,6 @@ const adminPassword = process.env.ADMIN_PASSWORD;
 const AUTHENTICATED = 'authenticated';
 export const POST = async (req: NextRequest) => {
   if (req.cookies.get(authCookieProperty)?.value === AUTHENTICATED) {
-    console.log('auto auth');
     return NextResponse.json(
       {
         authenticated: true,

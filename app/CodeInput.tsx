@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { useUserContext } from '@/context/UserContext';
 import { useInterval } from '@/hooks/useInterval';
 import { useSocketConnect } from '@/hooks/useSocketConnect';
+import { useSocketJoin } from '@/hooks/useSocketJoin';
 
 import { useAppSelector } from '@/redux/store';
 import { useRouter } from 'next/navigation';
@@ -14,10 +15,7 @@ import { twMerge } from 'tailwind-merge';
 const doNotTreeShakeMePls = ['bg-green-500', 'animate-pulse'];
 const CodeInput = () => {
   const [roomID, setRoomID] = useState('');
-  const roomConnectState = useAppSelector((store) => store.network.roomConnect);
-  const dispatch = useDispatch();
-  const router = useRouter();
-  const userContext = useUserContext();
+  const join = useSocketJoin();
   const connect = useSocketConnect();
   // useInterval(() => {}, );
   return (
@@ -45,8 +43,8 @@ const CodeInput = () => {
           if (!(typeof envURL === 'string')) {
             return;
           }
-          console.log('connecting button');
-          connect(roomID);
+          console.log('joining this room', roomID);
+          join(roomID);
         }}
         // className="border-2 w-full"
         className={twMerge([

@@ -11,6 +11,9 @@ import { RoomsActions } from '@/redux/slices/roomsSlice';
 import { useMeta } from '@/hooks/useMeta';
 import { Minus, Plus } from 'lucide-react';
 import { useUserContext } from '@/context/UserContext';
+import { useSocketContext } from '@/context/SocketContext';
+import { useSocketJoin } from '@/hooks/useSocketJoin';
+import { useRoomID } from '@/hooks/useRoomID';
 
 type Props = {
   roomID: string;
@@ -33,14 +36,21 @@ const AdminPolls = ({ roomID }: Props) => {
   const connect = useSocketConnect();
   const getMeta = useMeta();
   const userContext = useUserContext();
-  const polls = useAppSelector((store) =>
-    store.rooms.items.find((r) => r.roomID === roomID)
-  )?.polls;
-  console.log('resulting polls', polls);
-  if (room === undefined) {
-    connect(roomID);
-    return <>Loading...</>;
+  const socketContext = useSocketContext();
+
+  const join = useSocketJoin();
+  const [_, f] = useState(0);
+  // const isSockedConnected = socketContext.socketRef.current.connected;
+  if (!room) {
+    join(roomID);
+    // f((i) => 1 + 1);
+    return <>Joining room...</>;
   }
+
+  // if (room === undefined) {
+  //   connect(roomID);
+  //   return <>Loading...</>;
+  // }
 
   return (
     <div>
@@ -151,7 +161,6 @@ const AdminPolls = ({ roomID }: Props) => {
                 variant={'outline'}
                 className=""
                 onClick={() => {
-                  console.log('cleek!');
                   dispatch(
                     RoomsActions.vote(
                       {

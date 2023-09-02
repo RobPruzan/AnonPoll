@@ -12,7 +12,12 @@ import {
 } from 'react-redux';
 
 import { SocketIO, socketManager } from '@/socket-client/socket';
-import { FirstParameter, OnCB, SocketAction } from '@/lib/types';
+import {
+  BaseSocketAction,
+  FirstParameter,
+  OnCB,
+  SocketAction,
+} from '@/lib/types';
 import { match } from 'ts-pattern';
 import { io } from 'socket.io-client';
 import { RoomsActions, roomsSlice } from './slices/roomsSlice';
@@ -111,7 +116,7 @@ export const socketMiddleware =
           return;
         }
 
-        new Promise<Room>((resolve, reject) => {
+        new Promise<Array<BaseSocketAction>>((resolve, reject) => {
           dispatch(NetworkActions.setRoomState(LOADING));
           const ack: ConnectAck = (room) => {
             console.log('user joined the room:', room, '!');
@@ -123,9 +128,14 @@ export const socketMiddleware =
             payloadParsed.data.userID,
             ack
           );
-        }).then((room) => {
-          dispatch(RoomsActions.addRoom(room));
+        }).then((actions) => {
+          // dispatch(RoomsActions.addRoom(room));
+          // grabs db data, then applys all pending transactions
+          actions.forEach((action) => {
+            dispatch(action);
+          });
           dispatch(NetworkActions.setRoomState(INITIALIZED));
+
           action.meta?.pQueue.applyOnAll((node) => {
             dispatch(node.item);
           });

@@ -13,6 +13,8 @@ import {
   SocketAction,
 } from '../../shared/types';
 
+import { prisma } from '../../shared/prisma';
+
 const app = express();
 app.use(cors());
 
@@ -62,7 +64,7 @@ class BetterMap<TKey, TValue> extends Map<TKey, TValue> {
 io.on('connect', (socket) => {
   socket.on(
     'join room',
-    (roomID: string, userID: string, acknowledge: ConnectAck) => {
+    async (roomID: string, userID: string, acknowledge: ConnectAck) => {
       // activeRooms.setIfAbsent(
       //   roomID,
       //   {
@@ -76,6 +78,8 @@ io.on('connect', (socket) => {
       // );
       socket.join(roomID);
       socket.emit('send user data', socket.id);
+      const actions = await prisma.action.findMany();
+      acknowledge(actions);
       console.log('User joined room, user id is:', socket.id);
       // activeRooms.getAndThen(roomID, (value) => {
       //   acknowledge(value);
@@ -85,6 +89,11 @@ io.on('connect', (socket) => {
 
   socket.on('action', (action: SocketAction) => {
     console.log('emitting the following action', action);
+    prisma.action.create({
+      data: {
+        serializedJSON: JSON.stringify(action),
+      },
+    });
     // action.meta.fromServer = true;
     socket.broadcast.to(action.meta.roomID).emit('shared action', action);
   });

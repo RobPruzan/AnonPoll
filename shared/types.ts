@@ -42,6 +42,6 @@ export type Room = {
   polls: Array<Poll>;
 };
 
-export type ConnectAck = (value: Room) => void;
+export type ConnectAck = (value: Array<BaseSocketAction>) => void;
 export type Role = 'admin' | 'user';
 export type User = { id: string | null; role: Role };

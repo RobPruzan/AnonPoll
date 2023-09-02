@@ -14,6 +14,7 @@ import {
 } from '../../shared/types';
 
 import { prisma } from '../../shared/prisma';
+import { Socket } from 'socket.io-client';
 
 const app = express();
 app.use(cors());
@@ -27,60 +28,38 @@ const io = new Server(server, {
   },
 });
 
-class BetterMap<TKey, TValue> extends Map<TKey, TValue> {
-  getOrElse<TElse>(k: TKey, elseCB: () => TElse): TValue | TElse {
-    const value = this.get(k);
-
-    if (value === undefined) {
-      return elseCB();
-    }
-
-    return value;
-  }
-
-  getAndThen<TElse>(k: TKey, thenCB: (v: TValue) => TElse): TElse | null {
-    const value = this.get(k);
-
-    if (value === undefined) {
-      return null;
-    }
-
-    return thenCB(value);
-  }
-
-  setIfAbsent(k: TKey, v: TValue, elseCB: (existingVal: TValue) => unknown) {
-    const val = this.get(k);
-    if (val === undefined) {
-      this.set(k, v);
-      return;
-    }
-
-    elseCB(val);
-  }
-}
-
-// const activeRooms = new BetterMap<string, Room>();
+const activeRooms = new Map<string, Array<string>>();
 
 io.on('connect', (socket) => {
+  socket.on('create room', (roomID: string, acknowledge) => {
+    activeRooms.set(roomID, []);
+    acknowledge();
+  });
   socket.on(
     'join room',
     async (roomID: string, userID: string, acknowledge: ConnectAck) => {
-      // activeRooms.setIfAbsent(
-      //   roomID,
-      //   {
-      //     roomID: roomID,
-      //     polls: [],
-      //     user_ids: [userID],
-      //   },
-      //   (existingVal) => {
-      //     existingVal.user_ids.push(userID);
-      //   }
-      // );
+      if (!activeRooms.get(roomID)) {
+        acknowledge('error');
+      }
       socket.join(roomID);
+      const currentRoom = activeRooms.get(roomID);
+      const newRoom = [...(currentRoom ?? []), userID];
+      activeRooms.set(roomID, newRoom);
       socket.emit('send user data', socket.id);
-      const actions = await prisma.action.findMany();
+      console.log('finding many for roomID:', roomID);
+      const actions = await (
+        await prisma.action.findMany({
+          where: {
+            roomID: roomID,
+          },
+        })
+      ).map((sAction) => JSON.parse(sAction.serializedJSON) as SocketAction);
+      // console.log('sending over the following pending actions', actions);
+      console.log(
+        'any actions that are connect',
+        actions.filter((a) => a.type === 'connect')
+      );
       acknowledge(actions);
-      console.log('User joined room, user id is:', socket.id);
       // activeRooms.getAndThen(roomID, (value) => {
       //   acknowledge(value);
       // });
@@ -88,19 +67,35 @@ io.on('connect', (socket) => {
   );
 
   socket.on('action', (action: SocketAction) => {
-    console.log('emitting the following action', action);
-    prisma.action.create({
+    console.log('incoming action', action);
+    if (action.type === 'connect') {
+      return;
+    }
+    console.log('db entry for roomID:', action.meta.roomID);
+    const res = prisma.action.create({
       data: {
+        roomID: action.meta.roomID,
         serializedJSON: JSON.stringify(action),
       },
     });
-    // action.meta.fromServer = true;
+
+    res.then((d) => {
+      console.log('just saved the following to the db', d);
+    });
+
+    action.meta.fromServer = true;
+    action.type === 'connect' && console.log('THIS IS BROKEN');
+    console.log(
+      'broadcasting this action to the room id',
+      action,
+      action.meta.roomID
+    );
     socket.broadcast.to(action.meta.roomID).emit('shared action', action);
   });
 
-  socket.on('transfer over data', (room: Room) => {
-    socket.emit('sync with master', room);
-  });
+  // socket.on('transfer over data', (room: Room) => {
+  //   socket.emit('sync with master', room);
+  // });
 });
 
 const port = process.env.PORT || 8080;

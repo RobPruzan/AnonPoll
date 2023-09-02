@@ -56,6 +56,7 @@ export const socketMiddleware =
   (action: SocketAction) => {
     match(action.type)
       .with('connect', () => {
+        console.log('action that is type connect', action);
         const socket = action.meta?.socketMeta?.socket;
 
         if (!socket) {
@@ -65,7 +66,8 @@ export const socketMiddleware =
         //   throw new Error('I need a room to connect...');
         // }
 
-        socket.on('shared action', (action: SocketAction) => {
+        socket.on('shared action', (sharedAction: SocketAction) => {
+          console.log('received action', sharedAction);
           const isInitialized = getState().network.roomConnect.isInitialized;
           if (!action.meta?.pQueue) {
             throw new Error(
@@ -73,31 +75,23 @@ export const socketMiddleware =
             );
           }
           if (isInitialized) {
-            dispatch(action);
+            if (sharedAction.type === 'connect') {
+              console.log('fucker 3', sharedAction);
+              // this is a problem even if it temp fixes it
+              return;
+            }
+            dispatch(sharedAction);
           } else {
+            console.log('just enqueuing');
             action.meta.pQueue.enqueue(
               new PNode({
-                item: action,
+                item: sharedAction,
                 priority: action.meta.timeStamp,
               })
             );
           }
         });
 
-        socket.on('send user data', () => {
-          const room = getState().rooms.items.find(
-            (item) => item.roomID === action.meta?.roomID
-          );
-          if (!room) {
-            console.error('sending user undefined data...');
-            return;
-          }
-          socket.emit('transfer over data', room);
-        });
-
-        socket.on('sync with master', (room: Room) => {
-          dispatch(RoomsActions.replaceRoom(room));
-        });
         const payloadSchema = z.object({
           userID: z.string(),
           roomID: z.string(),
@@ -119,7 +113,11 @@ export const socketMiddleware =
         new Promise<Array<BaseSocketAction>>((resolve, reject) => {
           dispatch(NetworkActions.setRoomState(LOADING));
           const ack: ConnectAck = (room) => {
-            console.log('user joined the room:', room, '!');
+            if (room === 'error') {
+              reject('Room  is not active');
+              return;
+            }
+
             resolve(room);
           };
           socket.emit(
@@ -129,14 +127,22 @@ export const socketMiddleware =
             ack
           );
         }).then((actions) => {
+          console.log('ACK FUNC ON JOIN', actions);
           // dispatch(RoomsActions.addRoom(room));
           // grabs db data, then applys all pending transactions
-          actions.forEach((action) => {
-            dispatch(action);
+          actions.forEach((a) => {
+            if (a.type === 'connect') {
+              console.log('fucker 1');
+            }
+            dispatch(a);
           });
+
           dispatch(NetworkActions.setRoomState(INITIALIZED));
 
-          action.meta?.pQueue.applyOnAll((node) => {
+          action.meta?.pQueue.dequeueAll((node) => {
+            if (action.type === 'connect') {
+              console.log('fucker 2');
+            }
             dispatch(node.item);
           });
           action.meta?.socketMeta?.routeCB?.();
@@ -144,6 +150,10 @@ export const socketMiddleware =
       })
       .with('disconnect', () => {})
       .otherwise(() => {
+        if (action.meta?.fromServer) {
+          console.log('not dispatching an action from server');
+          return;
+        }
         // just a normal payloada
         if (action.meta?.socketMeta) {
           const socket = action.meta.socketMeta.socket;

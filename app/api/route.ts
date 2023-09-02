@@ -16,7 +16,6 @@ export const POST = async (req: NextRequest) => {
 
   const json = await req.json();
 
-  console.log('incoming!!', json);
   const jsonSchema = z.object({
     password: z.string(),
   });

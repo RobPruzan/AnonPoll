@@ -13,15 +13,15 @@ export const LOADING: LoadingStates = {
 };
 
 export const INITIALIZED: LoadingStates = {
-  isInitialized: false,
-  isLoading: true,
+  isInitialized: true,
+  isLoading: false,
   isError: false,
 };
 
 export const ERROR: LoadingStates = {
   isInitialized: false,
-  isLoading: true,
-  isError: false,
+  isLoading: false,
+  isError: true,
 };
 
 type LoadingStates = typeof DEFAULT_LOADING_STATES;

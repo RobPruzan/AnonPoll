@@ -1,4 +1,4 @@
-import { SocketContext } from '@/context/SocketContext';
+import { SocketContext, useSocketContext } from '@/context/SocketContext';
 import { useUserContext } from '@/context/UserContext';
 import { Meta } from '@/shared/types';
 
@@ -12,7 +12,7 @@ export const useSocketConnect = () => {
   const router = useRouter();
   const userContext = useUserContext();
   const dispatch = useDispatch();
-  const socketContext = useContext(SocketContext);
+  const socketContext = useSocketContext();
 
   const getMeta = useMeta();
   return (roomID: string) => {
@@ -31,7 +31,7 @@ export const useSocketConnect = () => {
     //   userID: userContext.user.id,
     //   roomID: null,
     // };
-
+    console.log('connecting from use socket connect');
     dispatch({
       type: 'connect',
       payload: {

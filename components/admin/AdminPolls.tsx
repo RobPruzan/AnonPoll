@@ -23,9 +23,10 @@ const AdminPolls = ({ roomID }: Props) => {
     store.rooms.items.find((item) => item.roomID === roomID)
   );
   const connect = useSocketConnect();
-  const meta = useMeta();
+  const getMeta = useMeta();
 
   if (room === undefined) {
+    console.log('room connecting undefined');
     connect(roomID);
     return <>Loading...</>;
   }
@@ -59,7 +60,7 @@ const AdminPolls = ({ roomID }: Props) => {
                   },
                   roomID,
                 },
-                meta
+                getMeta()
               )
             );
             setNewPoll({

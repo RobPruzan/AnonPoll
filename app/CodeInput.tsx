@@ -45,12 +45,13 @@ const CodeInput = () => {
           if (!(typeof envURL === 'string')) {
             return;
           }
+          console.log('connecting button');
           connect(roomID);
         }}
         // className="border-2 w-full"
         className={twMerge([
           'border-2 w-full',
-          roomConnectState.isSuccess ? ' border-green-500 ' : undefined,
+          // roomConnectState.isSuccess ? ' border-green-500 ' : undefined,
         ])}
         variant={'outline'}
       >

@@ -13,7 +13,7 @@ const SocketProvider = ({ children }: Props) => {
   if (!envURL) {
     throw new Error('No socket URL...');
   }
-  const socketRef = useRef<ReturnType<typeof io> | null>(io(envURL));
+  const socketRef = useRef<ReturnType<typeof io>>(io(envURL));
   return (
     <SocketContext.Provider
       value={{

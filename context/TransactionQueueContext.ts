@@ -1,4 +1,5 @@
 import { BaseSocketAction, SocketAction } from '@/lib/types';
+import { Item } from '@radix-ui/react-dropdown-menu';
 import { MutableRefObject, createContext, useContext } from 'react';
 
 export class PNode<T> {
@@ -27,7 +28,11 @@ export class PriorityQueue<T> {
     this.collection = newCollection;
   }
 
-  public dequeue(): T | null {
+  public dequeue(apply: (item: PNode<T>) => unknown): T | null {
+    const popped = this.collection.pop();
+    if (popped) {
+      apply(popped);
+    }
     return this.collection.pop()?.item ?? null;
   }
 
@@ -50,6 +55,12 @@ export class PriorityQueue<T> {
 
   public applyOnAll(applyFN: (n: PNode<T>) => unknown) {
     this.collection.forEach(applyFN);
+  }
+
+  public dequeueAll(apply: (item: PNode<T>) => unknown) {
+    while (this.collection.length > 0) {
+      this.dequeue(apply);
+    }
   }
 }
 

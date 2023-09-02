@@ -9,7 +9,7 @@ import { useTransactionQueueContext } from '@/context/TransactionQueueContext';
 export const useMeta = () => {
   const userContext = useUserContext();
   const pathName = usePathname();
-  const roomID = pathName.at(-1);
+  const roomID = pathName.split('/').at(-1);
   const socketContext = useSocketContext();
   const pQueueContext = useTransactionQueueContext();
   if (roomID === undefined) {
@@ -17,14 +17,18 @@ export const useMeta = () => {
     throw new Error('Cannot useMeta here');
   }
 
-  const getMeta: (partialMeta: Partial<Meta>) => Meta = (partialMeta) => ({
+  if (roomID === undefined) {
+    console.error('this may cause a problem in the future');
+    throw new Error('Cannot useMeta here');
+  }
+
+  const getMeta: (partialMeta?: Partial<Meta>) => Meta = (partialMeta) => ({
     roomID,
     userID: userContext.user.id,
     timeStamp: Date.now(),
     pQueue: pQueueContext.pQueueRef.current,
-
     socketMeta: {
-      socket: socketContext.socketRef?.current,
+      socket: socketContext.socketRef.current,
     },
     ...partialMeta,
   });

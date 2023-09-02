@@ -6,9 +6,9 @@ const page = () => {
   return (
     <div className="w-full h-full flex items-center justify-center">
       <div className="w-1/4 h-1/4 flex flex-col items-center  border-2 rounded-md py-3 justify-evenly">
-        <div className="flex w-full justify-evenly border-2  p-3 items-center border-x-0">
+        <div className="flex w-full justify-evenly  p-3 items-center ">
           <label htmlFor="room name">Name:</label>
-          <Input id="room name" className="w-2/4" />
+          <Input id="room name" className="w-3/5" />
         </div>
         <div className="w-full flex items-center justify-center">
           <Button className="w-4/5" variant={'outline'}>

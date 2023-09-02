@@ -15,9 +15,10 @@ import { SocketIO, socketManager } from '@/socket-client/socket';
 import { FirstParameter, Meta, SocketAction } from '@/lib/types';
 import { match } from 'ts-pattern';
 import { io } from 'socket.io-client';
-import { pollSlice } from './slices/pollSlice';
+import { RoomsActions, roomsSlice } from './slices/roomsSlice';
 import { z } from 'zod';
 import { NetworkActions, networkSlice } from './slices/networkSlice';
+import { ConnectAck, Room } from '@/shared/types';
 
 export function withMeta<TPayload, TState>(
   reducer: (
@@ -42,11 +43,6 @@ export const socketMiddleware =
   }) =>
   (next) =>
   (action: SocketAction & { meta: Meta | undefined }) => {
-    // switch (action.type) {
-    //   case 'connect':
-    //     throw Error
-    //   default
-    // }
     match(action.type)
       .with('connect', () => {
         const payloadSchema = z.object({
@@ -57,7 +53,7 @@ export const socketMiddleware =
         if (!action.meta) {
           console.error('not sending any meta on redux connect');
         }
-        if (!action.meta.socket) {
+        if (!action.meta.socketMeta?.socket) {
           console.error('not sending socket instance in connect dispatch');
           return;
         }
@@ -67,8 +63,9 @@ export const socketMiddleware =
           return;
         }
 
-        const socket = action.meta.socket;
-        new Promise((resolve, reject) => {
+        const socket = action.meta.socketMeta?.socket;
+
+        new Promise<Room>((resolve, reject) => {
           dispatch(
             NetworkActions.setRoomState({
               isError: false,
@@ -76,40 +73,38 @@ export const socketMiddleware =
               isSuccess: false,
             })
           );
-
+          const ack: ConnectAck = (room) => {
+            console.log('user joined the room:', room, '!');
+            resolve(room);
+          };
           socket.emit(
             'join room',
             payloadParsed.data.roomID,
             payloadParsed.data.userID,
-            (roomID: string) => {
-              resolve(roomID);
-              // dispatch({
-
-              //   })
-              console.log('user joined the room:', roomID, '!');
-            }
+            ack
           );
-        }).then((roomID) => {
-          if (typeof roomID === 'string') {
-            // set the roomID ...
-            console.log('got the room ID!->', roomID);
+        }).then((room) => {
+          // set the roomID ...
+          console.log('got the room ID!->', room);
+          dispatch(RoomsActions.addRoom(room));
+          dispatch(
+            NetworkActions.setRoomState({
+              isError: false,
+              isLoading: false,
+              isSuccess: true,
+            })
+          );
+          console.log('googa', action.meta.socketMeta?.routeCB);
+          action.meta.socketMeta?.routeCB();
+          setTimeout(() => {
             dispatch(
               NetworkActions.setRoomState({
                 isError: false,
                 isLoading: false,
-                isSuccess: true,
+                isSuccess: false,
               })
             );
-            setTimeout(() => {
-              dispatch(
-                NetworkActions.setRoomState({
-                  isError: false,
-                  isLoading: false,
-                  isSuccess: false,
-                })
-              );
-            }, 3000);
-          }
+          }, 3000);
         });
       })
       .with('disconnect', () => {})
@@ -125,7 +120,7 @@ export const socketMiddleware =
 
 export const store = configureStore({
   reducer: {
-    poll: pollSlice.reducer,
+    rooms: roomsSlice.reducer,
     network: networkSlice.reducer,
   },
 

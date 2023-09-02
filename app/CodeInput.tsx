@@ -1,9 +1,12 @@
 'use client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useUserContext } from '@/context/UserContext';
 import { useInterval } from '@/hooks/useInterval';
+import { useSocketConnect } from '@/hooks/useSocketConnect';
 import { Meta } from '@/lib/types';
 import { useAppSelector } from '@/redux/store';
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { io } from 'socket.io-client';
@@ -13,6 +16,9 @@ const CodeInput = () => {
   const [roomID, setRoomID] = useState('');
   const roomConnectState = useAppSelector((store) => store.network.roomConnect);
   const dispatch = useDispatch();
+  const router = useRouter();
+  const userContext = useUserContext();
+  const connect = useSocketConnect();
   // useInterval(() => {}, );
   return (
     <div
@@ -39,20 +45,7 @@ const CodeInput = () => {
           if (!(typeof envURL === 'string')) {
             return;
           }
-          const userID = crypto.randomUUID();
-          const meta: Meta = {
-            socket: io(envURL),
-            userID,
-            pollID: null,
-          };
-          dispatch({
-            type: 'connect',
-            payload: {
-              roomID,
-              userID,
-            },
-            meta,
-          });
+          connect(roomID);
         }}
         // className="border-2 w-full"
         className={twMerge([

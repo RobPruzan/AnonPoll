@@ -8,6 +8,8 @@ import SocketProvider from '@/providers/SocketProvider';
 import { Provider } from 'react-redux';
 import { store } from '@/redux/store';
 import ReduxProvider from '@/providers/ReduxProvider';
+import UserProvider from '@/providers/UserProvider';
+import RootProvider from '@/providers/RootProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,19 +24,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ReduxProvider>
-      <SocketProvider>
-        <html lang="en">
-          <body
-            className={twMerge(
-              inter.className,
-              'h-screen w-full dark flex flex-col '
-            )}
-          >
-            {children}
-          </body>
-        </html>
-      </SocketProvider>
-    </ReduxProvider>
+    <RootProvider>
+      <html lang="en">
+        <body
+          className={twMerge(
+            inter.className,
+            'h-screen w-full dark flex flex-col '
+          )}
+        >
+          {children}
+        </body>
+      </html>
+    </RootProvider>
   );
 }

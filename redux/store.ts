@@ -62,9 +62,6 @@ export const socketMiddleware =
         if (!socket) {
           throw new Error('Well... i need the socket to connect');
         }
-        // if (!action.meta?.roomID) {
-        //   throw new Error('I need a room to connect...');
-        // }
 
         socket.on('shared action', (sharedAction: SocketAction) => {
           console.log('received action', sharedAction);
@@ -75,14 +72,8 @@ export const socketMiddleware =
             );
           }
           if (isInitialized) {
-            if (sharedAction.type === 'connect') {
-              console.log('fucker 3', sharedAction);
-              // this is a problem even if it temp fixes it
-              return;
-            }
             dispatch(sharedAction);
           } else {
-            console.log('just enqueuing');
             action.meta.pQueue.enqueue(
               new PNode({
                 item: sharedAction,
@@ -96,7 +87,6 @@ export const socketMiddleware =
           userID: z.string(),
           roomID: z.string(),
         });
-        // expect socket io instance
         if (!action.meta) {
           console.error('not sending any meta on redux connect');
         }
@@ -127,9 +117,6 @@ export const socketMiddleware =
             ack
           );
         }).then((actions) => {
-          console.log('ACK FUNC ON JOIN', actions);
-          // dispatch(RoomsActions.addRoom(room));
-          // grabs db data, then applys all pending transactions
           actions.forEach((a) => {
             if (a.type === 'connect') {
               console.log('fucker 1');
@@ -140,9 +127,6 @@ export const socketMiddleware =
           dispatch(NetworkActions.setRoomState(INITIALIZED));
 
           action.meta?.pQueue.dequeueAll((node) => {
-            if (action.type === 'connect') {
-              console.log('fucker 2');
-            }
             dispatch(node.item);
           });
           action.meta?.socketMeta?.routeCB?.();
@@ -154,7 +138,6 @@ export const socketMiddleware =
           console.log('not dispatching an action from server');
           return;
         }
-        // just a normal payloada
         if (action.meta?.socketMeta) {
           const socket = action.meta.socketMeta.socket;
           const serializableAction: SocketAction = {
@@ -185,7 +168,7 @@ export const store = configureStore({
     getDefaultMiddleware({
       serializableCheck: {
         ignoredActions: ['connect'],
-        ignoredActionPaths: ['meta.socketMeta.socket'],
+        ignoredActionPaths: ['meta.socketMeta.socket', 'meta.pQueue'],
       },
     }).concat(socketMiddleware(socketManager)),
 });

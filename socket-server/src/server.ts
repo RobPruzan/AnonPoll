@@ -46,7 +46,6 @@ io.on('connect', (socket) => {
       const newRoom = [...(currentRoom ?? []), userID];
       activeRooms.set(roomID, newRoom);
       socket.emit('send user data', socket.id);
-      console.log('finding many for roomID:', roomID);
       const actions = await (
         await prisma.action.findMany({
           where: {
@@ -54,15 +53,11 @@ io.on('connect', (socket) => {
           },
         })
       ).map((sAction) => JSON.parse(sAction.serializedJSON) as SocketAction);
-      // console.log('sending over the following pending actions', actions);
       console.log(
         'any actions that are connect',
         actions.filter((a) => a.type === 'connect')
       );
       acknowledge(actions);
-      // activeRooms.getAndThen(roomID, (value) => {
-      //   acknowledge(value);
-      // });
     }
   );
 
@@ -92,10 +87,6 @@ io.on('connect', (socket) => {
     );
     socket.broadcast.to(action.meta.roomID).emit('shared action', action);
   });
-
-  // socket.on('transfer over data', (room: Room) => {
-  //   socket.emit('sync with master', room);
-  // });
 });
 
 const port = process.env.PORT || 8080;

@@ -17,8 +17,9 @@ export const UserContext = createContext<UserContextType | null>(null);
 
 export const useUserContext = () => {
   const context = useContext(UserContext);
-  if (!context) {
+  if (!context || !context.user.id) {
     throw new Error('useSocketContext must be used within a SocketProvider');
   }
-  return context;
+  // solely for typescript :/
+  return { ...context, userID: context.user.id };
 };

@@ -1,7 +1,7 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { withMeta } from '../store';
 import { FirstParameter } from '@/lib/types';
-import { Poll, Room } from '@/shared/types';
+import { Poll, Room, Vote, VotePayload } from '@/shared/types';
 
 type State = {
   items: Array<Room>;
@@ -46,6 +46,22 @@ export const roomsSlice = createSlice({
         state.items[mutIndex] = action.payload;
       }
     },
+
+    vote: withRoomsMeta<VotePayload>((state, action) => {
+      const room = state.items.find((i) => i.roomID === action.payload.roomID);
+      console.log('recieved');
+      if (!room) {
+        console.error(
+          'trying to vote on a room that does not exist, something went wrong'
+        );
+        return;
+      }
+
+      const poll = room.polls.find((p) => p.id === action.payload.id);
+      console.log(poll?.votes.length);
+      poll?.votes.push(action.payload.vote);
+      console.log(poll?.votes.length);
+    }),
   },
 });
 

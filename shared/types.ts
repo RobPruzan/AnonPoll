@@ -31,9 +31,16 @@ export type Question = {
   answers: Array<Answer>;
   correct_answer: Answer;
 };
+
+export type Vote = {
+  ansID: string;
+  userID: string;
+};
+
 export type Poll = {
   id: string;
   question: Question;
+  votes: Array<Vote>;
 };
 
 export type Room = {
@@ -45,3 +52,6 @@ export type Room = {
 export type ConnectAck = (value: Array<BaseSocketAction> | 'error') => void;
 export type Role = 'admin' | 'user';
 export type User = { id: string | null; role: Role };
+
+export type VotePayload = { vote: Vote } & Pick<Room, 'roomID'> &
+  Pick<Poll, 'id'>;

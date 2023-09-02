@@ -24,6 +24,7 @@ import {
   networkSlice,
 } from './slices/networkSlice';
 import { ConnectAck, Meta, Room } from '@/shared/types';
+import { PNode } from '@/context/TransactionQueueContext';
 
 export function withMeta<TPayload, TState>(
   reducer: (
@@ -60,7 +61,22 @@ export const socketMiddleware =
         // }
 
         socket.on('shared action', (action: SocketAction) => {
-          dispatch(action);
+          const isInitialized = getState().network.roomConnect.isInitialized;
+          if (!action.meta?.pQueue) {
+            throw new Error(
+              'Cannot share actions without a priority queue of transactions'
+            );
+          }
+          if (isInitialized) {
+            dispatch(action);
+          } else {
+            action.meta.pQueue.enqueue(
+              new PNode({
+                item: action,
+                priority: action.meta.timeStamp,
+              })
+            );
+          }
         });
 
         socket.on('send user data', () => {
@@ -110,6 +126,9 @@ export const socketMiddleware =
         }).then((room) => {
           dispatch(RoomsActions.addRoom(room));
           dispatch(NetworkActions.setRoomState(INITIALIZED));
+          action.meta?.pQueue.applyOnAll((node) => {
+            dispatch(node.item);
+          });
           action.meta?.socketMeta?.routeCB?.();
         });
       })

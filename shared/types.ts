@@ -1,4 +1,5 @@
 import { PriorityQueue } from '@/context/TransactionQueueContext';
+import { BaseSocketAction } from '@/lib/types';
 import { withMeta } from '@/redux/store';
 import { type io } from 'socket.io-client';
 
@@ -11,7 +12,7 @@ export type Meta = {
     socket: ReturnType<typeof io>;
     routeCB?: () => void;
   };
-  pQueue: PriorityQueue<SocketAction>;
+  pQueue: PriorityQueue<BaseSocketAction>;
 };
 export type SocketAction = { type: string; payload: any; meta: Meta };
 

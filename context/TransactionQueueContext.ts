@@ -1,7 +1,7 @@
-import { SocketAction } from '@/lib/types';
+import { BaseSocketAction, SocketAction } from '@/lib/types';
 import { MutableRefObject, createContext, useContext } from 'react';
 
-class PNode<T> {
+export class PNode<T> {
   item: T;
   priority: number;
 
@@ -48,13 +48,13 @@ export class PriorityQueue<T> {
     return this.collection.at(-1) ?? null;
   }
 
-  public applyOnAll(applyFN: (...args: Array<unknown>) => unknown) {
+  public applyOnAll(applyFN: (n: PNode<T>) => unknown) {
     this.collection.forEach(applyFN);
   }
 }
 
 type TransactionQueueContextType = {
-  pQueueRef: MutableRefObject<PriorityQueue<SocketAction>>;
+  pQueueRef: MutableRefObject<PriorityQueue<BaseSocketAction>>;
   // heap: heap;
 };
 

@@ -10,7 +10,7 @@
     "baseUrl": ".",
     "paths": {
       "*": ["node_modules/*"],
-      "shared": ["../shared/types.ts"]
+      "shared": ["../shared/types.ts", "../shared/prisma.ts"]
     }
   },
   "include": ["src/**/*.ts"]

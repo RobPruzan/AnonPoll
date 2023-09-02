@@ -1,10 +1,29 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { io } from 'socket.io-client';
 const DEFAULT_LOADING_STATES = {
+  isInitialized: false,
   isLoading: false,
-  isSuccess: false,
   isError: false,
 };
+
+export const LOADING: LoadingStates = {
+  isInitialized: false,
+  isLoading: true,
+  isError: false,
+};
+
+export const INITIALIZED: LoadingStates = {
+  isInitialized: false,
+  isLoading: true,
+  isError: false,
+};
+
+export const ERROR: LoadingStates = {
+  isInitialized: false,
+  isLoading: true,
+  isError: false,
+};
+
 type LoadingStates = typeof DEFAULT_LOADING_STATES;
 
 type State = {

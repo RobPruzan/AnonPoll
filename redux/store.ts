@@ -17,7 +17,12 @@ import { match } from 'ts-pattern';
 import { io } from 'socket.io-client';
 import { RoomsActions, roomsSlice } from './slices/roomsSlice';
 import { z } from 'zod';
-import { NetworkActions, networkSlice } from './slices/networkSlice';
+import {
+  INITIALIZED,
+  LOADING,
+  NetworkActions,
+  networkSlice,
+} from './slices/networkSlice';
 import { ConnectAck, Meta, Room } from '@/shared/types';
 
 export function withMeta<TPayload, TState>(
@@ -91,13 +96,7 @@ export const socketMiddleware =
         }
 
         new Promise<Room>((resolve, reject) => {
-          dispatch(
-            NetworkActions.setRoomState({
-              isError: false,
-              isLoading: true,
-              isSuccess: false,
-            })
-          );
+          dispatch(NetworkActions.setRoomState(LOADING));
           const ack: ConnectAck = (room) => {
             console.log('user joined the room:', room, '!');
             resolve(room);
@@ -110,23 +109,8 @@ export const socketMiddleware =
           );
         }).then((room) => {
           dispatch(RoomsActions.addRoom(room));
-          dispatch(
-            NetworkActions.setRoomState({
-              isError: false,
-              isLoading: false,
-              isSuccess: true,
-            })
-          );
+          dispatch(NetworkActions.setRoomState(INITIALIZED));
           action.meta?.socketMeta?.routeCB?.();
-          setTimeout(() => {
-            dispatch(
-              NetworkActions.setRoomState({
-                isError: false,
-                isLoading: false,
-                isSuccess: false,
-              })
-            );
-          }, 3000);
         });
       })
       .with('disconnect', () => {})
@@ -140,6 +124,8 @@ export const socketMiddleware =
               roomID: action.meta.roomID,
               userID: action.meta.userID,
               fromServer: action.meta.fromServer,
+              timeStamp: Date.now(),
+              pQueue: action.meta.pQueue,
             },
           };
           socket.emit('action', serializableAction);

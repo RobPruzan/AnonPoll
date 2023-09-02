@@ -1,14 +1,17 @@
+import { PriorityQueue } from '@/context/TransactionQueueContext';
 import { withMeta } from '@/redux/store';
 import { type io } from 'socket.io-client';
 
 export type Meta = {
   userID: string | null;
   roomID: string | null;
+  timeStamp: number;
   fromServer?: boolean;
   socketMeta?: {
     socket: ReturnType<typeof io>;
     routeCB?: () => void;
   };
+  pQueue: PriorityQueue<SocketAction>;
 };
 export type SocketAction = { type: string; payload: any; meta: Meta };
 

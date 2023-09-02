@@ -6,3 +6,6 @@ export const cn = (...inputs: ClassValue[]) => {
 };
 
 export const run = <T>(fn: () => T): T => fn();
+
+// request the database
+// sync with

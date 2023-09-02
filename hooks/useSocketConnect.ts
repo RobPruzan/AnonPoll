@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useContext } from 'react';
 import { useDispatch } from 'react-redux';
 import { io } from 'socket.io-client';
+import { useMeta } from './useMeta';
 
 export const useSocketConnect = () => {
   const router = useRouter();
@@ -13,15 +14,23 @@ export const useSocketConnect = () => {
   const dispatch = useDispatch();
   const socketContext = useContext(SocketContext);
 
+  const getMeta = useMeta();
   return (roomID: string) => {
-    const meta: Meta = {
+    const meta = getMeta({
       socketMeta: {
         socket: socketContext?.socketRef?.current,
         routeCB: () => router.push(`/polls/${roomID}`),
       },
-      userID: userContext.user.id,
       roomID: null,
-    };
+    });
+    // const meta: Meta = {
+    //   socketMeta: {
+    //     socket: socketContext?.socketRef?.current,
+    //     routeCB: () => router.push(`/polls/${roomID}`),
+    //   },
+    //   userID: userContext.user.id,
+    //   roomID: null,
+    // };
 
     dispatch({
       type: 'connect',

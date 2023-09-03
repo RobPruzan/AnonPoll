@@ -13,7 +13,10 @@ const TransactionQueueProvider = ({ children }: Props) => {
   const pQueueRef = useRef(
     new PriorityQueue<SocketAction>({
       items: [],
-      priorityFN: (item) => ({ priority: item.meta?.timeStamp ?? -1, item }),
+      priorityFN: (item) => {
+        console.log('poopy', item.meta.timeStamp);
+        return { priority: item.meta?.timeStamp ?? -1, item };
+      },
     })
   );
   return (

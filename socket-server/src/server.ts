@@ -26,6 +26,7 @@ const io = new Server(server, {
     methods: ['GET', 'POST'],
     // credentials: true
   },
+  maxHttpBufferSize: 1e8,
 });
 
 const activeRooms = new Map<string, Array<string>>();
@@ -61,25 +62,23 @@ io.on('connect', (socket) => {
     }
   );
 
-  socket.on('action', (action: SocketAction) => {
+  socket.on('action', async (action: SocketAction) => {
     if (action.type === 'connect' || action.type === 'join') {
       return;
     }
 
-    const res = prisma.action.create({
+    const res = await prisma.action.create({
       data: {
         roomID: action.meta.roomID,
         serializedJSON: JSON.stringify(action),
       },
     });
 
-    res.then((d) => {
-      console.log('created the following', d);
-    });
-
     action.meta.fromServer = true;
-    console.log('emitting shared action', action);
-    socket.broadcast.to(action.meta.roomID).emit('shared action', action);
+
+    socket.broadcast
+      .to(action.meta.roomID)
+      .emit('shared action', JSON.parse(res.serializedJSON));
   });
 });
 

@@ -63,6 +63,7 @@ export const socketMiddleware =
         }
 
         socket.on('shared action', (sharedAction: SocketAction) => {
+          console.log('got shared action');
           const isInitialized = getState().network.roomConnect.isInitialized;
           if (!action.meta?.pQueue) {
             throw new Error(
@@ -124,8 +125,10 @@ export const socketMiddleware =
           );
         }).then((actions) => {
           console.log('resolved room join', actions);
+          const pQueue = action.meta?.pQueue;
           actions.forEach((a) => {
-            action.meta?.pQueue.enqueue(
+            console.log('da action');
+            pQueue.enqueue(
               new PNode({
                 item: a,
                 priority: a.meta.timeStamp,
@@ -133,10 +136,19 @@ export const socketMiddleware =
             );
           });
 
+          console.log('da result is...');
+
+          pQueue.log();
+
           dispatch(NetworkActions.setRoomState(INITIALIZED));
 
-          action.meta?.pQueue.dequeueAll((node) => {
-            dispatch(node.item);
+          // action.meta?.pQueue.dequeueAll((node) => {
+          //   console.log('dispatching all dem', node.item);
+          //   dispatch(node.item);
+          // });
+          pQueue.collection.forEach((n) => {
+            console.log('def bein called', n);
+            dispatch(n.item);
           });
           action.meta?.socketMeta?.routeCB?.();
         });

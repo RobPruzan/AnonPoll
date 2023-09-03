@@ -1,5 +1,6 @@
 import { BaseSocketAction, SocketAction } from '@/lib/types';
 import { Item } from '@radix-ui/react-dropdown-menu';
+import { doesNotMatch } from 'assert';
 import { MutableRefObject, createContext, useContext } from 'react';
 
 export class PNode<T> {
@@ -13,7 +14,7 @@ export class PNode<T> {
 }
 
 export class PriorityQueue<T> {
-  private collection: Array<PNode<T>>;
+  public collection: Array<PNode<T>>;
 
   constructor(collection?: {
     items: Array<T>;
@@ -33,18 +34,29 @@ export class PriorityQueue<T> {
     if (popped) {
       apply(popped);
     }
+    console.log('called');
     return this.collection.pop()?.item ?? null;
   }
 
   public enqueue(item: PNode<T>) {
+    // sorted here
     const index = this.collection.findIndex(
       (cItem) => item.priority < cItem.priority
     );
 
+    if (index === -1) {
+      this.collection = this.collection.concat([item]);
+      return;
+    }
+    console.log('item and insert index', item.item, index);
     const LHS = this.collection.filter((_, cIndex) => cIndex < index);
     const RHS = this.collection.filter((_, cIndex) => cIndex >= index);
 
     const merged = LHS.concat([item]).concat(RHS);
+    console.log(
+      'merged overtime',
+      merged.map((m) => m.item)
+    );
 
     this.collection = merged;
   }
@@ -61,6 +73,15 @@ export class PriorityQueue<T> {
     while (this.collection.length > 0) {
       this.dequeue(apply);
     }
+    this.collection = [];
+  }
+
+  public clear() {
+    this.collection = [];
+  }
+
+  public log() {
+    console.log(this.collection.map((c) => c.item));
   }
 }
 

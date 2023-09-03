@@ -14,7 +14,6 @@ const TransactionQueueProvider = ({ children }: Props) => {
     new PriorityQueue<SocketAction>({
       items: [],
       priorityFN: (item) => {
-        console.log('poopy', item.meta.timeStamp);
         return {
           priority: item.meta.timeStamp ?? -1,
           item,

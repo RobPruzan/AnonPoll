@@ -22,7 +22,6 @@ export const roomsSlice = createSlice({
   name: 'rooms',
   reducers: {
     addRoom: withRoomsMeta<Room>((state, action) => {
-      console.log('created room');
       state.items.push(action.payload);
     }),
     addPoll: withRoomsMeta<{ roomID: string; poll: Poll }>((state, action) => {

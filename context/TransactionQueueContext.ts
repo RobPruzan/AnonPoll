@@ -36,7 +36,7 @@ export class PriorityQueue<T> {
     if (popped) {
       apply(popped);
     }
-    console.log('called');
+
     return this.collection.pop()?.item ?? null;
   }
 
@@ -81,17 +81,11 @@ export class PriorityQueue<T> {
   public deDuplicate() {
     const seenIDs = new Set();
     this.collection = this.collection.filter((node) => {
-      // console.log('vhat', !seenIDs.has(node.id));
-      console.log(
-        'iterating through the following node for dedeup with id:',
-        node.id
-      );
       if (!seenIDs.has(node.id)) {
-        // console.log('keeping', node.id);
         seenIDs.add(node.id);
         return true;
       }
-      // console.log('getting rid of', node.id);
+
       return false;
     });
   }

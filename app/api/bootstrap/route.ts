@@ -10,8 +10,6 @@ export const POST = async (req: Request) => {
   });
   const { roomID } = jsonSchema.parse(json);
 
-  console.log(`looking for roomID data: ->${roomID}<-`);
-
   const actions = await prisma.action.findMany({
     where: {
       roomID,
@@ -19,6 +17,6 @@ export const POST = async (req: Request) => {
   });
 
   const mapped = actions.map((data) => JSON.parse(data.serializedJSON));
-  console.log('returned actions');
+
   return NextResponse.json(mapped, { status: 200 });
 };

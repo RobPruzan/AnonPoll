@@ -44,9 +44,8 @@ const AdminPolls = ({ roomID }: Props) => {
   }
 
   if (!room) {
-    setTimeout(() => {
-      join(roomID);
-    }, 2000);
+    join(roomID);
+
     return <div>Joining room...</div>;
   }
 

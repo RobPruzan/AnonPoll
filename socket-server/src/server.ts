@@ -40,9 +40,7 @@ io.on('connect', (socket) => {
   pendingSockets.set(pendingRoomID, []);
   pendingSockets.get(pendingRoomID).push(socket.id);
 
-  // console.log('Connected');
   socket.on('create room', (roomID: string, acknowledge) => {
-    console.log('attempted room create');
     activeRooms.set(roomID, []);
     // acknowledge();
   });
@@ -76,47 +74,21 @@ io.on('connect', (socket) => {
           serializedJSON: JSON.stringify(action),
         },
       })
-      .then((d) => {
-        console.log('created the following ', JSON.parse(d.serializedJSON));
-        // prisma.action
-        //   .findMany({
-        //     where: {
-        //       roomID: action.meta.roomID,
-        //     },
-        //   })
-        //   .then((p) => console.log('retrieved the created', p));
-      });
+      // do not remove this .then the app will literally break
+      .then((d) => {});
 
     action.meta.fromServer = true;
 
-    console.log(
-      '----------------------------------------------------------------'
-    );
-    // console.log()
-
     const socketsIds = pendingSockets.get(action.meta.roomID) ?? [];
-    // console.log(await io.in("pooky").fetchSockets())
+
     const connectedSocket = await io.in(action.meta.roomID).fetchSockets();
     const connectedSocketIds = connectedSocket.map((socket) => socket.id);
     const allSocketIds = [
       ...new Set(connectedSocketIds.concat(socketsIds)).keys(),
     ];
     allSocketIds.forEach((sID) => {
-      console.log('sID (pending)', sID);
-
-      // sID !== socket.id &&
       socket.broadcast.to(sID).emit('shared action', action);
     });
-    //   .forEach((sID) => {
-    // console.log('SENDING ACTION TO', psID);
-    // socket.broadcast.to(sID).emit('shared action', action);
-    // });
-    console.log('sID (confirmed)', socket.id);
-    // socket.broadcast.to(action.meta.roomID).emit('shared action', action);
-    console.log('action: ', action);
-    console.log(
-      '----------------------------------------------------------------'
-    );
   });
 });
 

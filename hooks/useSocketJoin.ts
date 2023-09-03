@@ -18,8 +18,6 @@ export const useSocketJoin = () => {
       },
     });
 
-    console.log('sending this meta (join)', meta);
-
     dispatch({
       type: 'join',
       meta,

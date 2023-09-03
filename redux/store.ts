@@ -125,7 +125,12 @@ export const socketMiddleware =
         }).then((actions) => {
           console.log('resolved room join', actions);
           actions.forEach((a) => {
-            dispatch(a);
+            action.meta?.pQueue.enqueue(
+              new PNode({
+                item: a,
+                priority: a.meta.timeStamp,
+              })
+            );
           });
 
           dispatch(NetworkActions.setRoomState(INITIALIZED));

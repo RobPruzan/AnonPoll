@@ -30,55 +30,93 @@ const io = new Server(server, {
 });
 
 const activeRooms = new Map<string, Array<string>>();
+const pendingSockets = new Map<string, Array<string>>();
 
 io.on('connect', (socket) => {
+  const query = socket.handshake.query;
+  const pendingRoomID = query.pendingRoomID as string | undefined;
+  // const userID = query.userID as string | undefined;
+
+  pendingSockets.set(pendingRoomID, []);
+  pendingSockets.get(pendingRoomID).push(socket.id);
+
   // console.log('Connected');
   socket.on('create room', (roomID: string, acknowledge) => {
     console.log('attempted room create');
     activeRooms.set(roomID, []);
     // acknowledge();
   });
-  socket.on(
-    'join room',
-    async (roomID: string, userID: string, acknowledge: ConnectAck) => {
-      if (!activeRooms.get(roomID)) {
-        acknowledge('error');
-      }
-      socket.join(roomID);
-      const currentRoom = activeRooms.get(roomID);
-      const newRoom = [...(currentRoom ?? []), userID];
-      activeRooms.set(roomID, newRoom);
-      socket.emit('send user data', socket.id);
-      const actions = await (
-        await prisma.action.findMany({
-          where: {
-            roomID: roomID,
-          },
-        })
-      ).map((sAction) => JSON.parse(sAction.serializedJSON) as SocketAction);
-      console.log('searched for room id', roomID);
-      console.log('sending over the following actions', actions);
-      acknowledge(actions);
-    }
-  );
+  socket.on('join room', async (roomID: string, userID: string, ack) => {
+    socket.join(roomID);
+
+    // const newJoiningUsers = joiningUsers.filter(
+    //   (socketID) => socketToUser.get(socketID) !== socketToUser.get(socket.id)
+    // );
+    // pendingUserRoomJoins.set(roomID, newJoiningUsers);
+    const currentRoom = activeRooms.get(roomID);
+    const newRoom = [...(currentRoom ?? []), userID];
+    pendingSockets.set(
+      roomID,
+      (pendingSockets.get(roomID) ?? []).filter((sID) => sID !== socket.id)
+    );
+    activeRooms.set(roomID, newRoom);
+
+    ack();
+  });
 
   socket.on('action', async (action: SocketAction) => {
     if (action.type === 'connect' || action.type === 'join') {
       return;
     }
 
-    const res = await prisma.action.create({
-      data: {
-        roomID: action.meta.roomID,
-        serializedJSON: JSON.stringify(action),
-      },
-    });
+    prisma.action
+      .create({
+        data: {
+          roomID: action.meta.roomID,
+          serializedJSON: JSON.stringify(action),
+        },
+      })
+      .then((d) => {
+        console.log('created the following ', JSON.parse(d.serializedJSON));
+        // prisma.action
+        //   .findMany({
+        //     where: {
+        //       roomID: action.meta.roomID,
+        //     },
+        //   })
+        //   .then((p) => console.log('retrieved the created', p));
+      });
 
     action.meta.fromServer = true;
 
-    socket.broadcast
-      .to(action.meta.roomID)
-      .emit('shared action', JSON.parse(res.serializedJSON));
+    console.log(
+      '----------------------------------------------------------------'
+    );
+    // console.log()
+
+    const socketsIds = pendingSockets.get(action.meta.roomID) ?? [];
+    // console.log(await io.in("pooky").fetchSockets())
+    const connectedSocket = await io.in(action.meta.roomID).fetchSockets();
+    const connectedSocketIds = connectedSocket.map((socket) => socket.id);
+    const allSocketIds = [
+      ...new Set(connectedSocketIds.concat(socketsIds)).keys(),
+    ];
+    allSocketIds.forEach((sID) => {
+      console.log('sID (pending)', sID);
+
+      // sID !== socket.id &&
+      socket.broadcast.to(sID).emit('shared action', action);
+    });
+    //   .forEach((sID) => {
+    // console.log('SENDING ACTION TO', psID);
+    // socket.broadcast.to(sID).emit('shared action', action);
+    // });
+    console.log('sID (confirmed)', socket.id);
+    // socket.broadcast.to(action.meta.roomID).emit('shared action', action);
+    console.log('action: ', action);
+    console.log(
+      '----------------------------------------------------------------'
+    );
   });
 });
 

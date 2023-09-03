@@ -1,15 +1,17 @@
 import { BaseSocketAction, SocketAction } from '@/lib/types';
 import { Item } from '@radix-ui/react-dropdown-menu';
-import { doesNotMatch } from 'assert';
+import assert, { doesNotMatch } from 'assert';
 import { MutableRefObject, createContext, useContext } from 'react';
 
 export class PNode<T> {
   item: T;
   priority: number;
+  id: string;
 
-  constructor(n: { item: T; priority: number }) {
+  constructor(n: { item: T; priority: number; id: string }) {
     this.item = n.item;
     this.priority = n.priority;
+    this.id = n.id;
   }
 }
 
@@ -18,7 +20,7 @@ export class PriorityQueue<T> {
 
   constructor(collection?: {
     items: Array<T>;
-    priorityFN: (item: T) => { priority: number; item: T };
+    priorityFN: (item: T) => { priority: number; item: T; id: string };
   }) {
     const newCollection =
       collection?.items
@@ -39,6 +41,7 @@ export class PriorityQueue<T> {
   }
 
   public enqueue(item: PNode<T>) {
+    // assert(!!item.id);
     // sorted here
     const index = this.collection.findIndex(
       (cItem) => item.priority < cItem.priority
@@ -48,15 +51,10 @@ export class PriorityQueue<T> {
       this.collection = this.collection.concat([item]);
       return;
     }
-    console.log('item and insert index', item.item, index);
     const LHS = this.collection.filter((_, cIndex) => cIndex < index);
     const RHS = this.collection.filter((_, cIndex) => cIndex >= index);
 
     const merged = LHS.concat([item]).concat(RHS);
-    console.log(
-      'merged overtime',
-      merged.map((m) => m.item)
-    );
 
     this.collection = merged;
   }
@@ -78,6 +76,24 @@ export class PriorityQueue<T> {
 
   public clear() {
     this.collection = [];
+  }
+
+  public deDuplicate() {
+    const seenIDs = new Set();
+    this.collection = this.collection.filter((node) => {
+      // console.log('vhat', !seenIDs.has(node.id));
+      console.log(
+        'iterating through the following node for dedeup with id:',
+        node.id
+      );
+      if (!seenIDs.has(node.id)) {
+        // console.log('keeping', node.id);
+        seenIDs.add(node.id);
+        return true;
+      }
+      // console.log('getting rid of', node.id);
+      return false;
+    });
   }
 
   public log() {

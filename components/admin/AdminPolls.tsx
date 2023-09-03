@@ -1,6 +1,6 @@
 'use client';
 import { useAppDispatch, useAppSelector } from '@/redux/store';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useToast } from '../ui/use-toast';
 import { useDispatch } from 'react-redux';
 import { useSocketConnect } from '@/hooks/useSocketConnect';
@@ -33,24 +33,22 @@ const AdminPolls = ({ roomID }: Props) => {
   const room = useAppSelector((store) =>
     store.rooms.items.find((item) => item.roomID === roomID)
   );
-  const connect = useSocketConnect();
+
   const getMeta = useMeta();
   const userContext = useUserContext();
-  const socketContext = useSocketContext();
 
   const join = useSocketJoin();
-  const [_, f] = useState(0);
-  // const isSockedConnected = socketContext.socketRef.current.connected;
-  if (!room) {
-    join(roomID);
-    // f((i) => 1 + 1);
-    return <>Joining room...</>;
+
+  if (typeof window === 'undefined') {
+    return <div>Joining room...</div>;
   }
 
-  // if (room === undefined) {
-  //   connect(roomID);
-  //   return <>Loading...</>;
-  // }
+  if (!room) {
+    setTimeout(() => {
+      join(roomID);
+    }, 2000);
+    return <div>Joining room...</div>;
+  }
 
   return (
     <div>
@@ -119,6 +117,8 @@ const AdminPolls = ({ roomID }: Props) => {
       <Button
         onClick={() => {
           if (newPoll) {
+            const newID = crypto.randomUUID();
+
             dispatch(
               RoomsActions.addPoll(
                 {
@@ -130,7 +130,7 @@ const AdminPolls = ({ roomID }: Props) => {
                       text: newPoll.text,
                       answers: newPoll.answers,
                       correct_answer: { id: crypto.randomUUID(), text: '' },
-                      id: crypto.randomUUID(),
+                      id: newID,
                     },
                   },
                   roomID,
@@ -168,7 +168,7 @@ const AdminPolls = ({ roomID }: Props) => {
                           ansID: answer.id,
                           userID: userContext.userID,
                         },
-                        id: poll.id,
+                        poll: { id: poll.id },
                         roomID,
                       },
                       getMeta()

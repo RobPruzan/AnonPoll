@@ -58,7 +58,7 @@ export const roomsSlice = createSlice({
         return;
       }
 
-      const poll = room.polls.find((p) => p.id === action.payload.id);
+      const poll = room.polls.find((p) => p.id === action.payload.poll.id);
 
       poll?.votes.push(action.payload.vote);
     }),

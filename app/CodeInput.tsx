@@ -13,19 +13,24 @@ import { useDispatch } from 'react-redux';
 import { io } from 'socket.io-client';
 import { twMerge } from 'tailwind-merge';
 const doNotTreeShakeMePls = ['bg-green-500', 'animate-pulse'];
+const envURL = process.env.NEXT_PUBLIC_SOCKET_SERVER_URL;
 const CodeInput = () => {
   const [roomID, setRoomID] = useState('');
   const join = useSocketJoin();
-  const connect = useSocketConnect();
+  const router = useRouter();
   // useInterval(() => {}, );
   return (
     <div
       className={twMerge([
         'flex flex-col h-1/6 w-3/5 sm:w-2/5 md:w-2/6 lg:w-1/4 justify-evenly',
+
         // roomConnectState.isSuccess ? 'bg-green-500 animate-pulse' : undefined,
       ])}
     >
       <Input
+        onBlur={() => {
+          router.prefetch(`/${roomID}`);
+        }}
         // className="w-full border-2 text-lg p-6"
         className={twMerge([
           'w-full border-2 text-lg p-6',
@@ -39,11 +44,9 @@ const CodeInput = () => {
       />
       <Button
         onClick={() => {
-          const envURL = process.env.NEXT_PUBLIC_SOCKET_SERVER_URL;
           if (!(typeof envURL === 'string')) {
             return;
           }
-          console.log('joining this room', roomID);
           join(roomID);
         }}
         // className="border-2 w-full"

@@ -6,7 +6,7 @@ export type SocketAction = BaseSocketAction & { meta?: Meta };
 export type BaseSocketAction = {
   type: string;
   payload: any;
-  meta: Pick<Meta, 'timeStamp'>;
+  meta: Pick<Meta, 'timeStamp'> & Pick<Meta, 'actionID'>;
 };
 export type FirstParameter<T> = T extends (arg: infer R) => any ? R : never;
 export type SecondParameter<T> = T extends (arg1: any, arg: infer R) => any

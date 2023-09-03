@@ -4,6 +4,7 @@ import { withMeta } from '@/redux/store';
 import { type io } from 'socket.io-client';
 
 export type Meta = {
+  actionID: string;
   userID: string | null;
   roomID: string | null;
   timeStamp: number;
@@ -53,5 +54,6 @@ export type ConnectAck = (value: Array<BaseSocketAction> | 'error') => void;
 export type Role = 'admin' | 'user';
 export type User = { id: string | null; role: Role };
 
-export type VotePayload = { vote: Vote } & Pick<Room, 'roomID'> &
-  Pick<Poll, 'id'>;
+export type VotePayload = { vote: Vote } & Pick<Room, 'roomID'> & {
+    poll: Pick<Poll, 'id'>;
+  };

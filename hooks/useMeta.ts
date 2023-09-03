@@ -26,6 +26,7 @@ export const useMeta = () => {
     roomID,
     userID: userContext.user.id,
     timeStamp: Date.now(),
+    actionID: crypto.randomUUID(),
     pQueue: pQueueContext.pQueueRef.current,
     socketMeta: {
       socket: socketContext.socketRef.current,

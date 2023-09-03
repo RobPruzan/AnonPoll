@@ -11,7 +11,7 @@ import {
   type TypedUseSelectorHook,
 } from 'react-redux';
 
-import { SocketIO, socketManager } from '@/socket-client/socket';
+import { SocketIO } from '@/socket-client/socket';
 import {
   BaseSocketAction,
   FirstParameter,
@@ -44,7 +44,7 @@ export function withMeta<TPayload, TState>(
 }
 
 export const socketMiddleware =
-  (socketManager: SocketIO): Middleware<{}, any> =>
+  (): Middleware<{}, any> =>
   ({
     dispatch,
     getState,
@@ -63,7 +63,7 @@ export const socketMiddleware =
         }
 
         socket.on('shared action', (sharedAction: SocketAction) => {
-          console.log('got shared action');
+          console.log('got shared action', sharedAction);
           const isInitialized = getState().network.roomConnect.isInitialized;
           if (!action.meta?.pQueue) {
             throw new Error(
@@ -73,22 +73,18 @@ export const socketMiddleware =
           if (isInitialized) {
             dispatch(sharedAction);
           } else {
+            // this doesn't work because we need to join the room before receiving and shared actions
+            // need to also send it to "connecting" rooms
+            console.log('enquuing');
             action.meta.pQueue.enqueue(
               new PNode({
                 item: sharedAction,
-                priority: action.meta.timeStamp,
+                priority: sharedAction.meta.timeStamp,
+                id: sharedAction.meta.actionID,
               })
             );
           }
         });
-
-        // if (!action.meta) {
-        //   console.error('not sending any meta on redux connect');
-        // }
-        // if (!action.meta?.socketMeta?.socket) {
-        //   console.error('not sending socket instance in connect dispatch');
-        //   return;
-        // }
       })
       .with('join', () => {
         const socket = action.meta?.socketMeta?.socket;
@@ -106,52 +102,75 @@ export const socketMiddleware =
           console.error('join payload is wrong', payloadParsed.error);
           return;
         }
-        new Promise<Array<BaseSocketAction>>((resolve, reject) => {
-          dispatch(NetworkActions.setRoomState(LOADING));
-          const ack: ConnectAck = (room) => {
-            if (room === 'error') {
-              reject('Room  is not active');
-              return;
-            }
+        dispatch(NetworkActions.setRoomState(LOADING));
+        socket.emit(
+          'join room',
+          payloadParsed.data.roomID,
+          payloadParsed.data.userID,
+          // ack
+          () => {
+            fetch(process.env.NEXT_PUBLIC_API_URL + '/bootstrap', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                roomID: action.meta.roomID,
+              }),
+            }).then((data) =>
+              data.json().then((actions: Array<BaseSocketAction>) => {
+                console.log('got back actions', actions);
+                const pQueue = action.meta?.pQueue;
+                pQueue.log();
+                actions.forEach((a) => {
+                  if (
+                    !pQueue.collection.some((n) => n.id === a.meta.actionID)
+                  ) {
+                    console.log('enq', a.meta.actionID);
+                    pQueue.enqueue(
+                      new PNode({
+                        item: a,
+                        priority: a.meta.timeStamp,
+                        id: a.meta.actionID,
+                      })
+                    );
+                  }
+                });
+                pQueue.log();
+                // console.log(pQueue.collection.map((n) => n.id));
 
-            resolve(room);
-          };
-          console.log('EMITTING ROOM JOIN');
-          socket.emit(
-            'join room',
-            payloadParsed.data.roomID,
-            payloadParsed.data.userID,
-            ack
-          );
-        }).then((actions) => {
-          console.log('resolved room join', actions);
-          const pQueue = action.meta?.pQueue;
-          actions.forEach((a) => {
-            console.log('da action');
-            pQueue.enqueue(
-              new PNode({
-                item: a,
-                priority: a.meta.timeStamp,
+                const ids = new Set();
+                pQueue.collection = pQueue.collection.filter((n) => {
+                  console.log('going through node:', n.id);
+                  if (ids.has(n.id)) {
+                    return false;
+                  } else {
+                    ids.add(n.id);
+                    return true;
+                  }
+                });
+                dispatch(NetworkActions.setRoomState(INITIALIZED));
+
+                console.log('da result is...');
+
+                console.log('set to initialized');
+
+                // action.meta?.pQueue.dequeueAll((node) => {
+                //   console.log('dispatching all dem', node.item);
+                //   dispatch(node.item);
+                // });
+                // console.log('before dedup', pQueue.collection.length);
+                // // pQueue.deDuplicate();
+                // console.log('after dedup', pQueue.collection.length);
+                pQueue.collection.forEach((n) => {
+                  dispatch(n.item);
+                });
+                pQueue.clear();
+                action.meta?.socketMeta?.routeCB?.();
               })
             );
-          });
+          }
+        );
 
-          console.log('da result is...');
-
-          pQueue.log();
-
-          dispatch(NetworkActions.setRoomState(INITIALIZED));
-
-          // action.meta?.pQueue.dequeueAll((node) => {
-          //   console.log('dispatching all dem', node.item);
-          //   dispatch(node.item);
-          // });
-          pQueue.collection.forEach((n) => {
-            console.log('def bein called', n);
-            dispatch(n.item);
-          });
-          action.meta?.socketMeta?.routeCB?.();
-        });
+        // });
       })
       .with('disconnect', () => {})
       .otherwise(() => {
@@ -167,6 +186,7 @@ export const socketMiddleware =
               userID: action.meta.userID,
               fromServer: action.meta.fromServer,
               timeStamp: Date.now(),
+              actionID: crypto.randomUUID(),
               pQueue: action.meta.pQueue,
             },
           };
@@ -190,7 +210,7 @@ export const store = configureStore({
         ignoredActions: ['connect', 'join'],
         ignoredActionPaths: ['meta.socketMeta.socket', 'meta.pQueue'],
       },
-    }).concat(socketMiddleware(socketManager)),
+    }).concat(socketMiddleware()),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

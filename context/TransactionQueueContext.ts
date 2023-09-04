@@ -56,7 +56,7 @@ export class PriorityQueue<T> {
     const index = this.collection.findIndex(
       (cItem) => item.priority < cItem.priority
     );
-
+    console.log('/fdsf');
     if (index === -1) {
       this.collection = this.collection.concat([item]);
       return;
@@ -85,6 +85,7 @@ export class PriorityQueue<T> {
   }
 
   public clear() {
+    this.ids = new Set();
     this.collection = [];
   }
 

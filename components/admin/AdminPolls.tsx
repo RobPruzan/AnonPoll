@@ -52,31 +52,7 @@ const AdminPolls = ({ roomID }: Props) => {
 
     return <div>Joining room...</div>;
   }
-  // return (
-  //   <div className="w-full h-full flex flex-col">
-  //     <div className="flex h-2/5 w-1/4 border-r"></div>
-  //     <div className="flex flex-col h-2/5 w-3/4">
-  //       <div className="w-full h-full flex flex-col border border-b items-center justify-center">
-  //         <div className="h-3/5 w-full">
-  // <Input
-  //   onChange={(e) => {
-  //     setNewPoll((prev) => ({ ...prev, text: e.target.value }));
-  //   }}
-  //   value={newPoll.text}
-  //   className="w-1/4"
-  // />
-  //         </div>
-  //         <div className="h-2/5  w-full flex justify-end items-end">
-  //           <Button variant={'outline'}>
-  //             <ArrowRight />
-  //           </Button>
-  //         </div>
-  //       </div>
-  //     </div>
-  //     <div className="w-full h-3/5">poll stuff</div>
-  //   </div>
-  // );
-  // something seriously fucked up, need to fix it
+
   console.log(room.polls);
   return (
     <div className="flex flex-col h-full w-full">
@@ -87,7 +63,7 @@ const AdminPolls = ({ roomID }: Props) => {
           }}
           className="w-1/2 overflow-y-scroll flex flex-col border-r p-3 items-center justify-start"
         >
-          <div className="text-lg text-bold">Polls</div>
+          <div className="text-lg text-bold fadsf">Polls</div>
           {room.polls.map((poll) => (
             <div key={poll.id} className="border w-3/4 my-5 rounded-md p-3">
               <div className=" w-full  border-b">{poll.question.text}</div>

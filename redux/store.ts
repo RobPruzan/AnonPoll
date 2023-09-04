@@ -145,9 +145,9 @@ export const socketMiddleware =
                 // });
                 dispatch(NetworkActions.setRoomState(INITIALIZED));
                 console.log('before');
-                pQueue.log();
-                pQueue.deDuplicate();
-                console.log('after');
+                // pQueue.log();
+                // pQueue.deDuplicate();
+                // console.log('after');
                 pQueue.log();
 
                 pQueue.collection.forEach((n) => {

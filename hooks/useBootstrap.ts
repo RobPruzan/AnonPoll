@@ -23,6 +23,11 @@ export const useBootstrap = () => {
     if (room) {
       console.log('running fetch', pQueue.collection);
       run(async () => {
+        // weird requirment which will change, but this is complimentary bootstrap, if the original bootstrap never fired (/never dispatched anything)
+        // if (pQueue.dispatched.size === 0) {
+        //   console.log('fdsfdsa fsdafsdf');
+        //   return;
+        // }
         const res = await fetch(
           process.env.NEXT_PUBLIC_API_URL + '/bootstrap?amount=50',
           {

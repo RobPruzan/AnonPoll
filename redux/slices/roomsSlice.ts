@@ -34,6 +34,7 @@ export const roomsSlice = createSlice({
       }
 
       room.polls.push(action.payload.poll);
+      room.polls.sort((a, b) => b.createdAt - a.createdAt);
     }),
 
     replaceRoom: (state, action: PayloadAction<Room>) => {

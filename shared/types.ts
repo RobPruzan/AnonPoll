@@ -42,12 +42,14 @@ export type Poll = {
   id: string;
   question: Question;
   votes: Array<Vote>;
+  createdAt: number;
 };
 
 export type Room = {
   roomID: string;
   user_ids: Array<string>;
   polls: Array<Poll>;
+  createdAt: number;
 };
 
 export type ConnectAck = (value: Array<BaseSocketAction> | 'error') => void;

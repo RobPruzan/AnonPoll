@@ -53,6 +53,7 @@ const RoomCreate = ({}: Props) => {
                     polls: [],
                     roomID: roomCode,
                     user_ids: userContext.user.id ? [userContext.user.id] : [],
+                    createdAt: Date.now(),
                   },
                   getMeta({
                     roomID: roomCode,

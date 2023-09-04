@@ -1,8 +1,9 @@
 'use client';
 import { SocketContext } from '@/context/SocketContext';
 import { useUserContext } from '@/context/UserContext';
+import { useSocketDisconnect } from '@/hooks/useSocketDisconnect';
 import { usePathname } from 'next/navigation';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 
 type Props = {
@@ -14,7 +15,7 @@ const SocketProvider = ({ children }: Props) => {
   const pathname = usePathname();
   const userContext = useUserContext();
   const slugs = pathname.split('/');
-
+  // const disconnect = useSocketDisconnect();
   const roomID = slugs.at(-1);
 
   if (!envURL) {
@@ -34,6 +35,7 @@ const SocketProvider = ({ children }: Props) => {
           },
         })
   );
+
   return (
     <SocketContext.Provider
       value={{

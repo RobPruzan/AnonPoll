@@ -19,8 +19,8 @@ export const useBootstrap = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    console.log('trying to run');
-    if (room) {
+    console.log('trying to run', pQueue.collection, pQueue.ids);
+    if (room && process.env.NODE_ENV === 'production') {
       console.log('running fetch', pQueue.collection);
       run(async () => {
         // weird requirment which will change, but this is complimentary bootstrap, if the original bootstrap never fired (/never dispatched anything)
@@ -54,7 +54,10 @@ export const useBootstrap = () => {
         });
         console.log('dispatching for a second time', pQueue.ids);
         pQueue.collection.forEach((n) => {
-          !pQueue.dispatched.has(n.id) && dispatch(n.item);
+          if (!pQueue.dispatched.has(n.id)) {
+            dispatch(n.item);
+            pQueue.dispatched.add(n.id);
+          }
         });
 
         pQueue.clear();

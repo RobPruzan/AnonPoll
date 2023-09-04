@@ -18,7 +18,7 @@ import {
   OnCB,
   SocketAction,
 } from '@/lib/types';
-import { match } from 'ts-pattern';
+import { P, match } from 'ts-pattern';
 import { io } from 'socket.io-client';
 import { RoomsActions, roomsSlice } from './slices/roomsSlice';
 import { z } from 'zod';
@@ -163,7 +163,23 @@ export const socketMiddleware =
 
         // });
       })
-      .with('disconnect', () => {})
+      .with('disconnect', () => {
+        const socket = action.meta.socketMeta?.socket;
+        if (!socket) {
+          throw new Error('Cannot disconnect without socket');
+        }
+        socket.removeAllListeners();
+      })
+      .with('leave', () => {
+        console.log('incoming', action.payload);
+        const { userID, roomID } = action.payload;
+        const socket = action.meta.socketMeta?.socket;
+        if (!socket) {
+          throw new Error('Cannot disconnect without socket');
+        }
+
+        socket.emit('leave', roomID, userID);
+      })
       .otherwise(() => {
         if (action.meta?.fromServer) {
           return;
@@ -182,6 +198,7 @@ export const socketMiddleware =
               pQueue: action.meta.pQueue,
             },
           };
+          console.log('client side emit ', serializableAction);
           socket.emit('action', serializableAction);
         } else {
         }

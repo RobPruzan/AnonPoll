@@ -36,7 +36,7 @@ const Create = () => {
   });
 
   return (
-    <div className="flex w-full border-b h-2/5">
+    <div className="flex w-full border-b h-full">
       <div className="w-1/4  h-full border-r flex flex-col justify-evenly p-1 items-center">
         <Button
           onClick={() => setSelectType(SendType.Poll)}

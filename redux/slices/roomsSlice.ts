@@ -48,6 +48,10 @@ export const roomsSlice = createSlice({
       }
     },
 
+    leaveRoom: (state, action: PayloadAction<Room['roomID']>) => {
+      state.items = state.items.filter((i) => i.roomID !== action.payload);
+    },
+
     vote: withRoomsMeta<VotePayload>((state, action) => {
       const room = state.items.find((i) => i.roomID === action.payload.roomID);
 

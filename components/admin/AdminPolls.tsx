@@ -27,6 +27,8 @@ import { match } from 'ts-pattern';
 import { Textarea } from '../ui/textarea';
 import Create from './Create';
 import { useBootstrap } from '@/hooks/useBootstrap';
+import { useSocketLeave } from '@/hooks/useSocketLeave';
+import { useRouter } from 'next/navigation';
 
 type Props = {
   roomID: string;
@@ -41,16 +43,53 @@ const AdminPolls = ({ roomID }: Props) => {
   const getMeta = useMeta();
   const userContext = useUserContext();
   const join = useSocketJoin();
+  const connect = useSocketConnect();
+  const leave = useSocketLeave();
+  const socketRef = useSocketContext().socketRef;
+  const router = useRouter();
   useBootstrap();
+  //fdsafsdfsadffdsaFSDFFSDF
+  // useEffect(
+  //   () => () => {
+  //     dispatch(RoomsActions.leaveRoom(roomID));
+  //     leave(roomID);
+  //   },
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  //   []
+  // );
+
+  useEffect(() => {
+    const socket = socketRef.current;
+    return () => {
+      if (process.env.NODE_ENV === 'production') {
+        socket.disconnect();
+      }
+    };
+  }, []);
 
   if (typeof window === 'undefined') {
     return <div>Joining room...</div>;
   }
 
+  // if (socket.current.disconnected) {
+  //   // connect();
+  //   socket.current.connect();
+  //   return <div>Joining room...</div>;
+  // }
+
+  // if (socket.current.disconnected) {
+  //   router.push('/');
+  // }
+
   if (!room) {
+    console.log('fdsfdssfaafaaffsdff');
     join(roomID);
 
     return <div>Joining room...</div>;
+  }
+
+  if (process.env.NODE_ENV === 'production' && socketRef.current.disconnected) {
+    router.push('/');
   }
 
   console.log(room.polls);
@@ -63,7 +102,8 @@ const AdminPolls = ({ roomID }: Props) => {
           }}
           className="w-1/2 overflow-y-scroll flex flex-col border-r p-3 items-center justify-start"
         >
-          <div className="text-lg text-bold fadsf">Polls</div>
+          {/* fdsaf fdsafsdfdsfsdaf fsdff*/}
+          <div className="text-lg text-bold">Polls</div>
           {room.polls.map((poll) => (
             <div key={poll.id} className="border w-3/4 my-5 rounded-md p-3">
               <div className=" w-full  border-b">{poll.question.text}</div>

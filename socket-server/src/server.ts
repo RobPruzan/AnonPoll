@@ -30,21 +30,47 @@ const io = new Server(server, {
 });
 
 const activeRooms = new Map<string, Array<string>>();
+const activeSocketsInRooms = new Map<string, Array<string>>();
 const pendingSockets = new Map<string, Array<string>>();
 
 io.on('connect', (socket) => {
+  console.log('CONNECTED');
   const query = socket.handshake.query;
   const pendingRoomID = query.pendingRoomID as string | undefined;
+
+  if (pendingRoomID) {
+    socket.join(pendingRoomID);
+  }
   // const userID = query.userID as string | undefined;
 
-  pendingSockets.set(pendingRoomID, []);
-  pendingSockets.get(pendingRoomID).push(socket.id);
+  // pendingSockets.set(pendingRoomID, []);
+  // pendingSockets.get(pendingRoomID).push(socket.id);
 
   socket.on('create room', (roomID: string, acknowledge) => {
     activeRooms.set(roomID, []);
+    activeSocketsInRooms.set(roomID, []);
     // acknowledge();
   });
+  socket.on('leave', (roomID: string, userID: string) => {
+    socket.leave(roomID);
+    const room = activeRooms.get(roomID);
+    const socketRoom = activeSocketsInRooms.get(roomID) ?? [];
+    activeSocketsInRooms.set(
+      roomID,
+      socketRoom.filter((sID) => sID !== socket.id)
+    );
+    if (room) {
+      activeRooms.set(
+        roomID,
+        room.filter((p) => p !== userID)
+      );
+    }
+  });
   socket.on('join room', async (roomID: string, userID: string, ack) => {
+    const sockets = activeSocketsInRooms.get(roomID) ?? [];
+    if (sockets.some((s) => s === socket.id)) {
+      return;
+    }
     socket.join(roomID);
 
     // const newJoiningUsers = joiningUsers.filter(
@@ -61,7 +87,10 @@ io.on('connect', (socket) => {
 
     ack();
   });
-
+  socket.on('disconnect', (roomID?: string) => {
+    socket.leave(roomID);
+    socket.removeAllListeners();
+  });
   socket.on('action', async (action: SocketAction) => {
     if (action.type === 'connect' || action.type === 'join') {
       return;
@@ -78,17 +107,24 @@ io.on('connect', (socket) => {
       .then((d) => {});
 
     action.meta.fromServer = true;
+    socket.broadcast.to(action.meta.roomID).emit('shared action', action);
+    // this doesn't handle the disconnect
+    // const socketsIds = pendingSockets.get(action.meta.roomID) ?? [];
 
-    const socketsIds = pendingSockets.get(action.meta.roomID) ?? [];
-
-    const connectedSocket = await io.in(action.meta.roomID).fetchSockets();
-    const connectedSocketIds = connectedSocket.map((socket) => socket.id);
-    const allSocketIds = [
-      ...new Set(connectedSocketIds.concat(socketsIds)).keys(),
-    ];
-    allSocketIds.forEach((sID) => {
-      socket.broadcast.to(sID).emit('shared action', action);
-    });
+    // const connectedSocket = await io.in(action.meta.roomID).fetchSockets();
+    // console.log('a', socketsIds);
+    // console.log(
+    //   'b',
+    //   connectedSocket.map((socket) => socket.id)
+    // );
+    // const connectedSocketIds = connectedSocket.map((socket) => socket.id);
+    // const allSocketIds = [
+    //   ...new Set(connectedSocketIds.concat(socketsIds)).keys(),
+    // ];
+    // console.log('all ids', allSocketIds);
+    // allSocketIds.forEach((sID) => {
+    //   socket.broadcast.to(sID).emit('shared action', action);
+    // });
   });
 });
 

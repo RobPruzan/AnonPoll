@@ -70,6 +70,7 @@ export const socketMiddleware =
             );
           }
           if (isInitialized) {
+            console.log('emitting shared action', sharedAction);
             dispatch(sharedAction);
           } else {
             // this doesn't work because we need to join the room before receiving and shared actions
@@ -133,16 +134,21 @@ export const socketMiddleware =
                 });
                 pQueue.log();
 
-                const ids = new Set();
-                pQueue.collection = pQueue.collection.filter((n) => {
-                  if (ids.has(n.id)) {
-                    return false;
-                  } else {
-                    ids.add(n.id);
-                    return true;
-                  }
-                });
+                // const ids = new Set();
+                // pQueue.collection = pQueue.collection.filter((n) => {
+                //   if (ids.has(n.id)) {
+                //     return false;
+                //   } else {
+                //     ids.add(n.id);
+                //     return true;
+                //   }
+                // });
                 dispatch(NetworkActions.setRoomState(INITIALIZED));
+                console.log('before');
+                pQueue.log();
+                pQueue.deDuplicate();
+                console.log('after');
+                pQueue.log();
 
                 pQueue.collection.forEach((n) => {
                   dispatch(n.item);
@@ -161,6 +167,7 @@ export const socketMiddleware =
         if (action.meta?.fromServer) {
           return;
         }
+
         if (action.meta?.socketMeta) {
           const socket = action.meta.socketMeta.socket;
           const serializableAction: SocketAction = {

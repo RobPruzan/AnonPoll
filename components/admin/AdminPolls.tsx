@@ -1,5 +1,14 @@
 'use client';
 import { useAppDispatch, useAppSelector } from '@/redux/store';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useToast } from '../ui/use-toast';
 import { useDispatch } from 'react-redux';
@@ -16,33 +25,16 @@ import { useSocketJoin } from '@/hooks/useSocketJoin';
 import { useRoomID } from '@/hooks/useRoomID';
 import { match } from 'ts-pattern';
 import { Textarea } from '../ui/textarea';
+import Create from './Create';
 
 type Props = {
   roomID: string;
 };
 
-const SendType = {
-  Post: 'Post',
-  Question: 'Question',
-  Poll: 'Poll',
-} as const;
-type SendType = typeof SendType;
 const AdminPolls = ({ roomID }: Props) => {
-  const [newPoll, setNewPoll] = useState<{
-    id?: string;
-    text: string;
-    answers: Array<Answer>;
-  }>({
-    text: '',
-    answers: [],
-  });
-
-  const [selectedType, setSelectType] = useState<keyof SendType>(SendType.Poll);
   const room = useAppSelector((store) =>
     store.rooms.items.find((item) => item.roomID === roomID)
   );
-
-  const resizeRef = useRef<HTMLDivElement | null>();
 
   const dispatch = useAppDispatch();
   const getMeta = useMeta();
@@ -82,162 +74,11 @@ const AdminPolls = ({ roomID }: Props) => {
   //     <div className="w-full h-3/5">poll stuff</div>
   //   </div>
   // );
-
+  // something seriously fucked up, need to fix it
+  console.log(room.polls);
   return (
     <div className="flex flex-col h-full w-full">
-      <div className="flex w-full border-b h-2/5">
-        <div className="w-1/4  h-full border-r flex flex-col justify-evenly p-1 items-center">
-          <Button
-            onClick={() => setSelectType(SendType.Poll)}
-            variant={'outline'}
-            className=" w-full"
-          >
-            Poll
-          </Button>
-          <Button
-            onClick={() => setSelectType(SendType.Question)}
-            variant={'outline'}
-            className=" w-full"
-          >
-            Question
-          </Button>
-          <Button
-            onClick={() => setSelectType(SendType.Post)}
-            variant={'outline'}
-            className=" w-full"
-          >
-            Post
-          </Button>
-        </div>
-        <div
-          style={{
-            height: 'calc(100%)',
-          }}
-          className="w-3/4 flex "
-        >
-          <div className="h-full overflow-scroll w-4/5">
-            {match(selectedType)
-              .with(SendType.Poll, () => (
-                <>
-                  <Textarea
-                    onChange={(e) => {
-                      setNewPoll((prev) => ({
-                        ...prev,
-                        text: e.target.value,
-                      }));
-                    }}
-                    value={newPoll.text}
-                    className="w-3/4"
-                  />
-                  <div
-                    style={{
-                      height: 'calc(100%)',
-                    }}
-                    className="h-full overflow-scroll flex flex-col items-center justify-start w-fit p-4 transition"
-                  >
-                    {newPoll.answers.map((ans) => (
-                      <div className="transition" key={ans.id}>
-                        <div className="w-full flex">
-                          <Input
-                            onChange={(e) => {
-                              setNewPoll((old) => ({
-                                ...old,
-                                answers: old.answers.map((oAns) => {
-                                  if (oAns.id === ans.id) {
-                                    return {
-                                      ...oAns,
-                                      text: e.target.value,
-                                    };
-                                  }
-                                  return oAns;
-                                }),
-                              }));
-                            }}
-                            value={ans.text}
-                            className="w-full"
-                          />
-
-                          <Button
-                            onClick={() => {
-                              setNewPoll((old) => ({
-                                ...old,
-                                answers: old.answers.filter(
-                                  (oAns) => oAns.id !== ans.id
-                                ),
-                              }));
-                            }}
-                          >
-                            <Minus />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                    <Button
-                      onClick={() => {
-                        setNewPoll((old) => ({
-                          ...old,
-                          answers: [
-                            ...old.answers,
-                            {
-                              id: crypto.randomUUID(),
-                              text: '',
-                            },
-                          ],
-                        }));
-                      }}
-                    >
-                      <Plus />
-                    </Button>
-                  </div>
-                </>
-              ))
-              .with(SendType.Post, () => <></>)
-              .with(SendType.Question, () => <></>)
-              .exhaustive()}
-          </div>
-          <div className="w-1/5 flex items-end justify-end">
-            <Button
-              onClick={() => {
-                if (newPoll) {
-                  const newID = crypto.randomUUID();
-
-                  dispatch(
-                    RoomsActions.addPoll(
-                      {
-                        poll: {
-                          createdAt: Date.now(),
-                          id: crypto.randomUUID(),
-                          votes: [],
-                          question: {
-                            // defaults here need to fill in
-                            text: newPoll.text,
-                            answers: newPoll.answers,
-                            correct_answer: {
-                              id: crypto.randomUUID(),
-                              text: '',
-                            },
-                            id: newID,
-                          },
-                        },
-                        roomID,
-                      },
-                      getMeta()
-                    )
-                  );
-                  setNewPoll({
-                    text: '',
-                    answers: [],
-                  });
-                }
-              }}
-              variant={'outline'}
-            >
-              <ArrowRight />
-            </Button>
-          </div>
-        </div>
-      </div>
-      <div className="h-3/5  flex w-full">
+      <div className="h-full  flex w-full">
         <div
           style={{
             height: 'calc(100%)',
@@ -246,7 +87,7 @@ const AdminPolls = ({ roomID }: Props) => {
         >
           <div className="text-lg text-bold">Polls</div>
           {room.polls.map((poll) => (
-            <div key={poll.id} className="border w-1/2 my-5 rounded-md p-3">
+            <div key={poll.id} className="border w-3/4 my-5 rounded-md p-3">
               <div className=" w-full  border-b">{poll.question.text}</div>
 
               {poll.question.answers.map((answer) => (
@@ -292,140 +133,19 @@ const AdminPolls = ({ roomID }: Props) => {
           <div className="text-lg text-bold">Other</div>
         </div>
       </div>
+      {/* <div className="w-full border-t"> */}
+      <Sheet>
+        <SheetTrigger className="border absolute bottom-0 left-0 w-fit p-3 rounded-r rounded-b-0 hover:bg-slate-700 transition">
+          Create
+        </SheetTrigger>
+        <SheetContent>
+          <SheetHeader>
+            <Create />
+          </SheetHeader>
+        </SheetContent>
+      </Sheet>
     </div>
   );
-  // return (
-  //   <div>
-  //     {roomID}
-  //     <div>Add poll</div>
-  // <Input
-  //   onChange={(e) => {
-  //     setNewPoll((prev) => ({ ...prev, text: e.target.value }));
-  //   }}
-  //   value={newPoll.text}
-  //   className="w-1/4"
-  // />
-  //     <div className="border-2 flex flex-col items-center justify-center w-fit p-4 transition">
-  //   {newPoll.answers.map((ans) => (
-  //     <div className="transition" key={ans.id}>
-  //       <div className="w-full flex">
-  //         <Input
-  //           onChange={(e) => {
-  //             setNewPoll((old) => ({
-  //               ...old,
-  //               answers: old.answers.map((oAns) => {
-  //                 if (oAns.id === ans.id) {
-  //                   return {
-  //                     ...oAns,
-  //                     text: e.target.value,
-  //                   };
-  //                 }
-  //                 return oAns;
-  //               }),
-  //             }));
-  //           }}
-  //           value={ans.text}
-  //           className="w-full"
-  //         />
-
-  //         <Button
-  //           onClick={() => {
-  //             setNewPoll((old) => ({
-  //               ...old,
-  //               answers: old.answers.filter((oAns) => oAns.id !== ans.id),
-  //             }));
-  //           }}
-  //         >
-  //           <Minus />
-  //         </Button>
-  //       </div>
-  //     </div>
-  //   ))}
-  //   <Button
-  //     onClick={() => {
-  //       setNewPoll((old) => ({
-  //         ...old,
-  //         answers: [
-  //           ...old.answers,
-  //           {
-  //             id: crypto.randomUUID(),
-  //             text: '',
-  //           },
-  //         ],
-  //       }));
-  //     }}
-  //   >
-  //     <Plus />
-  //   </Button>
-  // </div>
-  // <Button
-  //   onClick={() => {
-  //     if (newPoll) {
-  //       const newID = crypto.randomUUID();
-
-  //       dispatch(
-  //         RoomsActions.addPoll(
-  //           {
-  //             poll: {
-  //               id: crypto.randomUUID(),
-  //               votes: [],
-  //               question: {
-  //                 // defaults here need to fill in
-  //                 text: newPoll.text,
-  //                 answers: newPoll.answers,
-  //                 correct_answer: { id: crypto.randomUUID(), text: '' },
-  //                 id: newID,
-  //               },
-  //             },
-  //             roomID,
-  //           },
-  //           getMeta()
-  //         )
-  //       );
-  //       setNewPoll({
-  //         text: '',
-  //         answers: [],
-  //       });
-  //     }
-  //   }}
-  //   variant={'outline'}
-  // >
-  //   Add poll
-  // </Button>
-
-  // {room.polls.map((poll) => (
-  //   <div key={poll.id} className="border w-1/4 my-5">
-  //     <div className="border w-full">{poll.question.text}</div>
-  //     {poll.votes.length}
-  //     {poll.question.answers.map((answer) => (
-  //       <div key={answer.id}>
-  //         <div>{answer.text}</div>
-
-  //         <Button
-  //           variant={'outline'}
-  //           className=""
-  //           onClick={() => {
-  //             dispatch(
-  //               RoomsActions.vote(
-  //                 {
-  //                   vote: {
-  //                     ansID: answer.id,
-  //                     userID: userContext.userID,
-  //                   },
-  //                   poll: { id: poll.id },
-  //                   roomID,
-  //                 },
-  //                 getMeta()
-  //               )
-  //             );
-  //           }}
-  //         ></Button>
-  //       </div>
-  //     ))}
-  //   </div>
-  // ))}
-  //   </div>
-  // );
 };
 
 export default AdminPolls;

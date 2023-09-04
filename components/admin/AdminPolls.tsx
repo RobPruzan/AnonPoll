@@ -26,6 +26,7 @@ import { useRoomID } from '@/hooks/useRoomID';
 import { match } from 'ts-pattern';
 import { Textarea } from '../ui/textarea';
 import Create from './Create';
+import { useBootstrap } from '@/hooks/useBootstrap';
 
 type Props = {
   roomID: string;
@@ -40,6 +41,7 @@ const AdminPolls = ({ roomID }: Props) => {
   const getMeta = useMeta();
   const userContext = useUserContext();
   const join = useSocketJoin();
+  useBootstrap();
 
   if (typeof window === 'undefined') {
     return <div>Joining room...</div>;

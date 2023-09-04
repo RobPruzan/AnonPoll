@@ -151,9 +151,10 @@ export const socketMiddleware =
                 pQueue.log();
 
                 pQueue.collection.forEach((n) => {
+                  pQueue.dispatched.add(n.id);
                   dispatch(n.item);
                 });
-                pQueue.clear();
+                // pQueue.clear();
                 action.meta?.socketMeta?.routeCB?.();
               })
             );

@@ -11,7 +11,8 @@ datasource db {
 }
 
 model Action {
-  id             Int    @id @default(autoincrement())
+  id             Int      @id @default(autoincrement())
   roomID         String
   serializedJSON String
+  createdAt      DateTime @default(now())
 }

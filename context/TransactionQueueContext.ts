@@ -17,6 +17,8 @@ export class PNode<T> {
 
 export class PriorityQueue<T> {
   public collection: Array<PNode<T>>;
+  public ids: Set<string>;
+  public dispatched: Set<string>;
 
   constructor(collection?: {
     items: Array<T>;
@@ -29,11 +31,14 @@ export class PriorityQueue<T> {
         .map((item) => new PNode(item)) ?? [];
 
     this.collection = newCollection;
+    this.ids = new Set(this.collection.map((n) => n.id));
+    this.dispatched = new Set();
   }
 
   public dequeue(apply: (item: PNode<T>) => unknown): T | null {
     const popped = this.collection.pop();
     if (popped) {
+      this.ids.delete(popped.id);
       apply(popped);
     }
 
@@ -41,6 +46,11 @@ export class PriorityQueue<T> {
   }
 
   public enqueue(item: PNode<T>) {
+    if (this.ids.has(item.id)) {
+      return;
+    }
+
+    this.ids.add(item.id);
     // assert(!!item.id);
     // sorted here
     const index = this.collection.findIndex(

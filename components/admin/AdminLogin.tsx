@@ -42,6 +42,7 @@ const AdminLogin = (props: Props) => {
       const requestOptions = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
       };
       const response = await fetch(apiEndpointURL, requestOptions);
       const json = await response.json();

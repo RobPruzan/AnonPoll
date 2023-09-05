@@ -36,41 +36,48 @@ const Create = () => {
   });
 
   return (
-    <div className="flex w-full border-b h-full">
-      <div className="w-1/4  h-full border-r flex flex-col justify-evenly p-1 items-center">
-        <Button
-          onClick={() => setSelectType(SendType.Poll)}
-          variant={'outline'}
-          className=" w-full"
-        >
-          Poll
-        </Button>
-        <Button
-          onClick={() => setSelectType(SendType.Question)}
-          variant={'outline'}
-          className=" w-full"
-        >
-          Question
-        </Button>
-        <Button
-          onClick={() => setSelectType(SendType.Post)}
-          variant={'outline'}
-          className=" w-full"
-        >
-          Post
-        </Button>
+    <div className="flex flex-col w-full  h-full">
+      <div className="w-full    ">
+        <div className="p-2 flex  justify-evenly  items-center h-full w-full">
+          <Button
+            onClick={() => setSelectType(SendType.Poll)}
+            variant={'outline'}
+            className=" w-1/4"
+          >
+            Poll
+          </Button>
+          <Button
+            onClick={() => setSelectType(SendType.Question)}
+            variant={'outline'}
+            className=" w-1/4"
+          >
+            Question
+          </Button>
+          <Button
+            onClick={() => setSelectType(SendType.Post)}
+            variant={'outline'}
+            className=" w-1/4"
+          >
+            Post
+          </Button>
+        </div>
       </div>
       <div
         style={{
           height: 'calc(100%)',
         }}
-        className="w-3/4 flex "
+        className="w-full flex p-3 "
       >
-        <div className="h-full overflow-scroll w-4/5">
+        <div
+          style={{
+            height: 'calc(100%)',
+          }}
+          className="h-full overflow-scroll w-full "
+        >
           {match(selectedType)
             .with(SendType.Poll, () => (
               <>
-                <Textarea
+                <textarea
                   onChange={(e) => {
                     setNewPoll((prev) => ({
                       ...prev,
@@ -78,18 +85,18 @@ const Create = () => {
                     }));
                   }}
                   value={newPoll.text}
-                  className="w-3/4"
+                  className="w-full ring-0 outline-none rounded-md bg-background shadow-md border border-secondary focus:border-gray-500 p-2"
                 />
                 <div
-                  style={{
-                    height: 'calc(100%)',
-                  }}
-                  className="h-full overflow-scroll flex flex-col items-center justify-start w-fit p-4 transition"
+                  // style={{
+                  //   height: 'calc(100%)',
+                  // }}
+                  className=" flex flex-col items-center justify-start w-fit p-4 transition"
                 >
                   {newPoll.answers.map((ans) => (
                     <div className="transition" key={ans.id}>
                       <div className="w-full flex">
-                        <Input
+                        <textarea
                           onChange={(e) => {
                             setNewPoll((old) => ({
                               ...old,
@@ -105,7 +112,7 @@ const Create = () => {
                             }));
                           }}
                           value={ans.text}
-                          className="w-full"
+                          className="w-full ring-0 outline-none rounded-md bg-background shadow-md border border-secondary focus:border-gray-500 p-2"
                         />
 
                         <Button

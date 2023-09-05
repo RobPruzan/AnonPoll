@@ -74,7 +74,6 @@ export const socketMiddleware =
           } else {
             // this doesn't work because we need to join the room before receiving and shared actions
             // need to also send it to "connecting" rooms
-
             action.meta.pQueue.enqueue(
               new PNode({
                 item: sharedAction,
@@ -119,9 +118,7 @@ export const socketMiddleware =
                 const pQueue = action.meta?.pQueue;
                 pQueue.log();
                 actions.forEach((a) => {
-                  if (
-                    !pQueue.collection.some((n) => n.id === a.meta.actionID)
-                  ) {
+                  if (!pQueue.ids.has(a.meta.actionID)) {
                     pQueue.enqueue(
                       new PNode({
                         item: a,

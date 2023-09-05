@@ -12,7 +12,7 @@ export const useConnect = () => {
 
   useEffect(() => {
     if (!socket.socketRef.current.connected) {
-      // fdsfds
+      // fdsfdsfsdfdad
       connect();
     }
 

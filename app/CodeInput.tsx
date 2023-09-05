@@ -7,6 +7,7 @@ import { useSocketConnect } from '@/hooks/useSocketConnect';
 import { useSocketJoin } from '@/hooks/useSocketJoin';
 
 import { useAppSelector } from '@/redux/store';
+import { EnterIcon } from '@radix-ui/react-icons';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -22,7 +23,7 @@ const CodeInput = () => {
   return (
     <div
       className={twMerge([
-        'flex flex-col h-1/6 w-3/5 sm:w-2/5 md:w-2/6 lg:w-1/4 justify-evenly',
+        'flex  items-center  w-4/5 sm:w4/5 md:w-3/6 lg:w-2/4 justify-evenly',
 
         // roomConnectState.isSuccess ? 'bg-green-500 animate-pulse' : undefined,
       ])}
@@ -33,30 +34,35 @@ const CodeInput = () => {
         }}
         // className="w-full border-2 text-lg p-6"
         className={twMerge([
-          'w-full border-2 text-lg p-6',
+          'w-3/5 sm:w-4/5 border-2 text-lg p-6 transition shadow-sm shadow-primary',
           // roomConnectState.isSuccess
           //   ? 'border-2 border-green-500 animate-pulse'
           //   : undefined,
         ])}
         type="text"
+        placeholder="Enter room code"
         value={roomID}
         onChange={(e) => setRoomID(e.target.value)}
       />
       <Button
         onClick={() => {
+          console.log('clicked');
           if (!(typeof envURL === 'string')) {
             return;
           }
+          console.log();
           join(roomID);
         }}
         // className="border-2 w-full"
         className={twMerge([
-          'border-2 w-full',
+          'h-[52px] border-2 shadow-sm shadow-primary animate-pulse',
+          // 'h-10 w-1/5 bg-opacity-40',
           // roomConnectState.isSuccess ? ' border-green-500 ' : undefined,
         ])}
         variant={'outline'}
       >
-        Join Up
+        {/* Join Up */}
+        <EnterIcon />
       </Button>
     </div>
   );

@@ -49,7 +49,7 @@ io.on('connect', (socket) => {
   socket.on('create room', (roomID: string, acknowledge) => {
     activeRooms.set(roomID, []);
     activeSocketsInRooms.set(roomID, []);
-    // acknowledge();
+    acknowledge();
   });
   socket.on('leave', (roomID: string, userID: string) => {
     socket.leave(roomID);

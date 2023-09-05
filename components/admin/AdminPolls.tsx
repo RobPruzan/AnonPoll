@@ -18,7 +18,16 @@ import { Button } from '../ui/button';
 import { Answer, Poll } from '@/shared/types';
 import { RoomsActions } from '@/redux/slices/roomsSlice';
 import { useMeta } from '@/hooks/useMeta';
-import { ArrowRight, Minus, Plus, Send } from 'lucide-react';
+import {
+  ArrowRight,
+  Circle,
+  Fish,
+  FishOff,
+  Flag,
+  Minus,
+  Plus,
+  Send,
+} from 'lucide-react';
 import { useUserContext } from '@/context/UserContext';
 import { useSocketContext } from '@/context/SocketContext';
 import { useSocketJoin } from '@/hooks/useSocketJoin';
@@ -71,6 +80,12 @@ const AdminPolls = ({ roomID }: Props) => {
             }}
             className="overflow-y-scroll flex flex-col items-center justify-start"
           >
+            {room.polls.length === 0 && (
+              <div className="w-full text-lg text-bold opacity-50 h-full justify-center items-center p-10">
+                Nobody has made any polls, check back later
+                <FishOff className=" animate-bounce mt-1" />
+              </div>
+            )}
             {room.polls.map((poll) => (
               <div
                 key={poll.id}

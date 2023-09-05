@@ -22,7 +22,7 @@ const RoomCreate = ({}: Props) => {
   const getMeta = useMeta();
   return (
     <div className="w-full h-full flex items-center justify-center">
-      <div className="w-1/4 h-1/4 flex flex-col items-center  border-2 rounded-md py-3 justify-evenly">
+      <div className="w-3/5 md:w-2/5 lg:w-1/4 h-1/4 flex flex-col items-center  border-2 rounded-md py-3 justify-evenly">
         <div className="flex w-full justify-evenly  p-3 items-center ">
           <label htmlFor="room name">Name:</label>
           <Input
@@ -38,13 +38,13 @@ const RoomCreate = ({}: Props) => {
               // socketContext.socketRef?.current
               socketContext?.socketRef?.current.emit(
                 'create room',
-                roomCode
-                // () => {
-                //   setShowSuccess(true);
-                //   setTimeout(() => {
-                //     setShowSuccess(false);
-                //   }, 3000);
-                // }
+                roomCode,
+                () => {
+                  setShowSuccess(true);
+                  setTimeout(() => {
+                    setShowSuccess(false);
+                  }, 3000);
+                }
               );
 
               dispatch(

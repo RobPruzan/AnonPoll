@@ -1,5 +1,5 @@
 import { useAppSelector } from '@/redux/store';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRoomID } from './useRoomID';
 import { run } from '@/lib/utils';
 import {
@@ -17,17 +17,13 @@ export const useBootstrap = () => {
     store.rooms.items.find((item) => item.roomID === roomID)
   );
   const dispatch = useDispatch();
+  const [fetched, setFetched] = useState(false);
 
   useEffect(() => {
-    console.log('trying to run', pQueue.collection, pQueue.ids);
-    if (room && process.env.NODE_ENV === 'production') {
-      console.log('running fetch', pQueue.collection);
+    if (room && !fetched) {
       run(async () => {
+        setFetched(true);
         // weird requirment which will change, but this is complimentary bootstrap, if the original bootstrap never fired (/never dispatched anything)
-        // if (pQueue.dispatched.size === 0) {
-        //   console.log('fdsfdsa fsdafsdf');
-        //   return;
-        // }
         const res = await fetch(
           process.env.NEXT_PUBLIC_API_URL + '/bootstrap?amount=50',
           {
@@ -40,7 +36,7 @@ export const useBootstrap = () => {
         );
 
         const actions: Array<BaseSocketAction> = await res.json();
-        console.log('before enq', pQueue.ids);
+
         actions.forEach((a) => {
           if (!pQueue.collection.some((n) => n.id === a.meta.actionID)) {
             pQueue.enqueue(
@@ -52,7 +48,7 @@ export const useBootstrap = () => {
             );
           }
         });
-        console.log('dispatching for a second time', pQueue.ids);
+
         pQueue.collection.forEach((n) => {
           if (!pQueue.dispatched.has(n.id)) {
             dispatch(n.item);

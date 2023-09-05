@@ -12,5 +12,6 @@ export const useSocketContext = () => {
   if (!context || !context.socketRef?.current) {
     throw new Error('useSocketContext must be used within a SocketProvider');
   }
+
   return { socketRef: context.socketRef };
 };

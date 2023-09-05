@@ -17,6 +17,9 @@ export const useSocketConnect = () => {
 
   const getMeta = useMeta();
   return () => {
+    if (socketContext.socketRef.current.connected) {
+      return;
+    }
     const meta = getMeta({
       socketMeta: {
         socket: socketContext?.socketRef?.current,

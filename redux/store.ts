@@ -70,7 +70,6 @@ export const socketMiddleware =
             );
           }
           if (isInitialized) {
-            console.log('emitting shared action', sharedAction);
             dispatch(sharedAction);
           } else {
             // this doesn't work because we need to join the room before receiving and shared actions
@@ -134,20 +133,7 @@ export const socketMiddleware =
                 });
                 pQueue.log();
 
-                // const ids = new Set();
-                // pQueue.collection = pQueue.collection.filter((n) => {
-                //   if (ids.has(n.id)) {
-                //     return false;
-                //   } else {
-                //     ids.add(n.id);
-                //     return true;
-                //   }
-                // });
                 dispatch(NetworkActions.setRoomState(INITIALIZED));
-                console.log('before');
-                // pQueue.log();
-                // pQueue.deDuplicate();
-                // console.log('after');
                 pQueue.log();
 
                 pQueue.collection.forEach((n) => {
@@ -168,10 +154,10 @@ export const socketMiddleware =
         if (!socket) {
           throw new Error('Cannot disconnect without socket');
         }
+        socket.disconnect();
         socket.removeAllListeners();
       })
       .with('leave', () => {
-        console.log('incoming', action.payload);
         const { userID, roomID } = action.payload;
         const socket = action.meta.socketMeta?.socket;
         if (!socket) {
@@ -198,7 +184,7 @@ export const socketMiddleware =
               pQueue: action.meta.pQueue,
             },
           };
-          console.log('client side emit ', serializableAction);
+
           socket.emit('action', serializableAction);
         } else {
         }

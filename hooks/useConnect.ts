@@ -3,15 +3,23 @@ import { useSocketConnect } from './useSocketConnect';
 import { useSocketDisconnect } from './useSocketDisconnect';
 import { useSocketLeave } from './useSocketLeave';
 import { usePathname } from 'next/navigation';
+import { useSocketContext } from '@/context/SocketContext';
 
 export const useConnect = () => {
   const connect = useSocketConnect();
+  const socket = useSocketContext();
   const disconnect = useSocketDisconnect();
 
   useEffect(() => {
-    connect();
+    if (!socket.socketRef.current.connected) {
+      // fdsfds
+      connect();
+    }
+
     return () => {
-      // disconnect();
+      if (socket.socketRef.current.disconnected) {
+        disconnect();
+      }
     };
   });
 };

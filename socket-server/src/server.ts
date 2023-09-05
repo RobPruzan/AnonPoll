@@ -34,7 +34,7 @@ const activeSocketsInRooms = new Map<string, Array<string>>();
 const pendingSockets = new Map<string, Array<string>>();
 
 io.on('connect', (socket) => {
-  console.log('CONNECTED');
+  console.log('CONNECTEDD');
   const query = socket.handshake.query;
   const pendingRoomID = query.pendingRoomID as string | undefined;
 

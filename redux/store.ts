@@ -24,6 +24,8 @@ import { RoomsActions, roomsSlice } from './slices/roomsSlice';
 import { z } from 'zod';
 import {
   INITIALIZED,
+  INITIATED_FETCH,
+  INITIATED_FETCH_AND_INITIALIZED,
   LOADING,
   NetworkActions,
   networkSlice,
@@ -70,6 +72,9 @@ export const socketMiddleware =
             );
           }
           if (isInitialized) {
+            sharedAction.meta;
+            //            ^?
+
             dispatch(sharedAction);
           } else {
             // this doesn't work because we need to join the room before receiving and shared actions
@@ -107,6 +112,13 @@ export const socketMiddleware =
           payloadParsed.data.userID,
           // ack
           () => {
+            console.log('got run');
+            if (getState().network.roomConnect.hasInitiatedFetch) {
+              console.log('psyc');
+              return;
+            }
+            console.log('fetching');
+            dispatch(NetworkActions.setRoomState(INITIATED_FETCH));
             fetch(process.env.NEXT_PUBLIC_API_URL + '/bootstrap', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -130,12 +142,16 @@ export const socketMiddleware =
                 });
                 pQueue.log();
 
-                dispatch(NetworkActions.setRoomState(INITIALIZED));
+                dispatch(
+                  NetworkActions.setRoomState(INITIATED_FETCH_AND_INITIALIZED)
+                );
                 pQueue.log();
 
                 pQueue.collection.forEach((n) => {
-                  pQueue.dispatched.add(n.id);
-                  dispatch(n.item);
+                  if (!pQueue.dispatched.has(n.id)) {
+                    pQueue.dispatched.add(n.id);
+                    dispatch(n.item);
+                  }
                 });
                 // pQueue.clear();
                 action.meta?.socketMeta?.routeCB?.();
@@ -170,7 +186,7 @@ export const socketMiddleware =
 
         if (action.meta?.socketMeta) {
           const socket = action.meta.socketMeta.socket;
-          const serializableAction: SocketAction = {
+          const serializableAction = {
             ...action,
             meta: {
               roomID: action.meta.roomID,
@@ -178,7 +194,7 @@ export const socketMiddleware =
               fromServer: action.meta.fromServer,
               timeStamp: Date.now(),
               actionID: crypto.randomUUID(),
-              pQueue: action.meta.pQueue,
+              // pQueue: action.meta.pQueue,
             },
           };
 

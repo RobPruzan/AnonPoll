@@ -6,6 +6,7 @@ import UserProvider from './UserProvider';
 import TransactionQueueProvider from './TransactionQueueProvider';
 import { useConnect } from '@/hooks/useConnect';
 import ConnectProvider from './ConnectProvider';
+import AuthProvider from './AuthProvider';
 
 type Props = {
   children: React.ReactNode;
@@ -13,15 +14,17 @@ type Props = {
 
 const RootProvider = ({ children }: Props) => {
   return (
-    <TransactionQueueProvider>
-      <UserProvider>
-        <ReduxProvider>
-          <SocketProvider>
-            <ConnectProvider>{children}</ConnectProvider>
-          </SocketProvider>
-        </ReduxProvider>
-      </UserProvider>
-    </TransactionQueueProvider>
+    <UserProvider>
+      <TransactionQueueProvider>
+        <AuthProvider>
+          <ReduxProvider>
+            <SocketProvider>
+              <ConnectProvider>{children}</ConnectProvider>
+            </SocketProvider>
+          </ReduxProvider>
+        </AuthProvider>
+      </TransactionQueueProvider>
+    </UserProvider>
   );
 };
 

@@ -1,6 +1,7 @@
-import { useUserContext } from '@/context/UserContext';
+import { UserContext, useUserContext } from '@/context/UserContext';
 import { run } from '@/lib/utils';
-import { useEffect } from 'react';
+import { useContext, useEffect } from 'react';
+import { z } from 'zod';
 
 // export const useSession = () => {
 //   const userContext = useUserContext()
@@ -14,3 +15,44 @@ import { useEffect } from 'react';
 //     })
 //   }, [])
 // }
+
+export const authenticateRawJsonRes = (
+  json: unknown,
+  options?: {
+    successCB?: (...args: any[]) => void;
+    failCB?: (...args: any[]) => void;
+  }
+) => {
+  const jsonSchema = z.object({
+    authenticated: z.boolean(),
+  });
+  const parsedJson = jsonSchema.parse(json);
+  if (parsedJson.authenticated) {
+    //
+    options?.successCB?.();
+  } else {
+    options?.failCB?.();
+  }
+};
+export const useSession = () => {
+  const userContext = useContext(UserContext);
+  const apiEndpointURL = process.env.NEXT_PUBLIC_API_URL!;
+  useEffect(() => {
+    run(async () => {
+      const requestOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      };
+      const response = await fetch(apiEndpointURL, requestOptions);
+      const json = await response.json();
+      authenticateRawJsonRes(json, {
+        successCB: () => {
+          console.log('authing as admin');
+          userContext?.setUser((user) => ({ ...user, role: 'admin' }));
+        },
+      });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+};

@@ -3,11 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useUserContext } from '@/context/UserContext';
 import { useInterval } from '@/hooks/useInterval';
+import { useSession } from '@/hooks/useSession';
 import { useSocketConnect } from '@/hooks/useSocketConnect';
 import { useSocketJoin } from '@/hooks/useSocketJoin';
 
 import { useAppSelector } from '@/redux/store';
 import { EnterIcon } from '@radix-ui/react-icons';
+
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -19,6 +21,7 @@ const CodeInput = () => {
   const [roomID, setRoomID] = useState('');
   const join = useSocketJoin();
   const router = useRouter();
+  useSession();
   // useInterval(() => {}, );
   return (
     <div
@@ -50,7 +53,7 @@ const CodeInput = () => {
           if (!(typeof envURL === 'string')) {
             return;
           }
-          console.log();
+          // console.log('running');
           join(roomID);
         }}
         // className="border-2 w-full"

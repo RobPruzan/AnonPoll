@@ -1,4 +1,7 @@
 'use client';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+
 import { useAppDispatch, useAppSelector } from '@/redux/store';
 import {
   Sheet,
@@ -15,7 +18,7 @@ import { useDispatch } from 'react-redux';
 import { useSocketConnect } from '@/hooks/useSocketConnect';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
-import { Answer, Poll } from '@/shared/types';
+import { Answer } from '@/shared/types';
 import { RoomsActions } from '@/redux/slices/roomsSlice';
 import { useMeta } from '@/hooks/useMeta';
 import {
@@ -38,6 +41,7 @@ import Create from './Create';
 import { useBootstrap } from '@/hooks/useBootstrap';
 import { useSocketLeave } from '@/hooks/useSocketLeave';
 import { useRouter } from 'next/navigation';
+import Poll from '../Poll';
 
 type Props = {
   roomID: string;
@@ -54,6 +58,7 @@ const AdminPolls = ({ roomID }: Props) => {
   const join = useSocketJoin();
   const socketRef = useSocketContext().socketRef;
   const router = useRouter();
+  const lastJoinEmitRef = useRef<number | null>(null);
 
   useBootstrap();
 
@@ -61,8 +66,24 @@ const AdminPolls = ({ roomID }: Props) => {
     return <div>Joining room...</div>;
   }
 
+  console.log('cock hfsdfofle', room);
+
+  // if (!room) {
+  //   if (lastJoinEmitRef.current === null) {
+  //     join(roomID);
+  //     console.log('emit join');
+  //     lastJoinEmitRef.current = Date.now();
+  //   } else if (Date.now() - lastJoinEmitRef.current > 1000) {
+  //     join(roomID);
+  //     console.log('emit join');
+  //     lastJoinEmitRef.current = Date.now();
+  //   }
+
+  //   return <div>Joining room...</div>;
+  // }
   if (!room) {
     join(roomID);
+
     return <div>Joining room...</div>;
   }
 
@@ -87,65 +108,7 @@ const AdminPolls = ({ roomID }: Props) => {
               </div>
             )}
             {room.polls.map((poll) => (
-              <div
-                key={poll.id}
-                className="border  w-3/4 my-5 rounded-md shadow-md shadow-secondary  "
-              >
-                <div className=" w-full  flex flex-wrap   p-3">
-                  {poll.question.text}
-                </div>
-                <div className="flex flex-col ">
-                  {poll.question.answers.map((answer) => (
-                    <div
-                      className="w-full h-full flex  border-t"
-                      key={answer.id}
-                    >
-                      <div
-                        style={{
-                          width: 'calc(3rem + 20px) ',
-                        }}
-                        // className="h-full  w-3/4 px-3"
-                        className=" h-full min-h-[60px] flex items-center justify-center"
-                      >
-                        <Button
-                          variant={'outline'}
-                          className="w-12  "
-                          onClick={() => {
-                            dispatch(
-                              RoomsActions.vote(
-                                {
-                                  vote: {
-                                    ansID: answer.id,
-                                    userID: userContext.userID,
-                                  },
-                                  poll: { id: poll.id },
-                                  roomID,
-                                },
-                                getMeta()
-                              )
-                            );
-                          }}
-                        >
-                          {
-                            poll.votes.filter(
-                              (vote) => vote.ansID === answer.id
-                            ).length
-                          }
-                        </Button>
-                      </div>
-                      <div
-                        style={{
-                          width: 'calc(90% - 3rem) ',
-                          wordWrap: 'break-word',
-                        }}
-                        className="h-full  w-3/4 px-6 py-2"
-                      >
-                        {answer.text}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <Poll poll={poll} key={poll.id} />
             ))}
           </div>
         </div>

@@ -1,1 +1,1 @@
-anonymous polls 🕵️
+anonymous polls w/ real-time client sync 🕵️

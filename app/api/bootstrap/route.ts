@@ -22,7 +22,7 @@ export const POST = async (req: Request) => {
     take: amount ? Number(amount) : undefined,
   });
 
-  const mapped = actions.map((data) => JSON.parse(data.serializedJSON));
+  const mapped = actions?.map((data) => JSON.parse(data.serializedJSON));
 
   return NextResponse.json(mapped, { status: 200 });
 };

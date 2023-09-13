@@ -119,7 +119,9 @@ export const socketMiddleware =
             }
             console.log('fetching');
             dispatch(NetworkActions.setRoomState(INITIATED_FETCH));
-            fetch(process.env.NEXT_PUBLIC_API_URL + '/bootstrap', {
+            const apiURL = window.location.origin + '/api';
+
+            fetch(apiURL + '/bootstrap', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({

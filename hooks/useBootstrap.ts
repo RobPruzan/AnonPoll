@@ -11,6 +11,7 @@ import { useDispatch } from 'react-redux';
 
 export const useBootstrap = () => {
   const roomID = useRoomID();
+  const apiURL = window.location.origin + '/api';
 
   const pQueue = useTransactionQueueContext().pQueueRef.current;
   const room = useAppSelector((store) =>
@@ -24,16 +25,13 @@ export const useBootstrap = () => {
       run(async () => {
         setFetched(true);
         // weird requirment which will change, but this is complimentary bootstrap, if the original bootstrap never fired (/never dispatched anything)
-        const res = await fetch(
-          process.env.NEXT_PUBLIC_API_URL + '/bootstrap?amount=50',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              roomID,
-            }),
-          }
-        );
+        const res = await fetch(apiURL + '/bootstrap?amount=50', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            roomID,
+          }),
+        });
 
         const actions: Array<BaseSocketAction> = await res.json();
 

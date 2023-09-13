@@ -36,7 +36,7 @@ export const authenticateRawJsonRes = (
 };
 export const useSession = () => {
   const userContext = useContext(UserContext);
-  const apiEndpointURL = process.env.NEXT_PUBLIC_API_URL!;
+  const apiURL = window.location.origin + '/api';
   useEffect(() => {
     run(async () => {
       const requestOptions = {
@@ -44,7 +44,7 @@ export const useSession = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
       };
-      const response = await fetch(apiEndpointURL, requestOptions);
+      const response = await fetch(apiURL, requestOptions);
       const json = await response.json();
       authenticateRawJsonRes(json, {
         successCB: () => {

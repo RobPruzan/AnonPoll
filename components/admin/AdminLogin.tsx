@@ -17,7 +17,7 @@ const AdminLogin = (props: Props) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   // asserted
-  const apiEndpointURL = process.env.NEXT_PUBLIC_API_URL!;
+  const apiEndpointURL = window.location.origin + '/api';
 
   useSession();
 

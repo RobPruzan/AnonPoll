@@ -79,6 +79,10 @@ io.on('connect', (socket) => {
     ack();
   });
   socket.on('disconnect', (roomID?: string) => {
+    // #TODO
+    if (!roomID) {
+      return;
+    }
     socket.leave(roomID);
     socket.removeAllListeners();
   });

@@ -87,6 +87,9 @@ io.on('connect', (socket) => {
     socket.removeAllListeners();
   });
   socket.on('action', async (action: SocketAction) => {
+    if (!action.meta.roomID) {
+      return;
+    }
     if (action.type === 'connect' || action.type === 'join') {
       return;
     }

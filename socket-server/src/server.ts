@@ -90,16 +90,17 @@ io.on('connect', (socket) => {
     if (action.type === 'connect' || action.type === 'join') {
       return;
     }
-
-    prisma.action
-      .create({
-        data: {
-          roomID: action.meta.roomID,
-          serializedJSON: JSON.stringify(action),
-        },
-      })
-      // do not remove this .then the app will literally break
-      .then((d) => {});
+    if (action.meta.roomID) {
+      prisma.action
+        .create({
+          data: {
+            roomID: action.meta.roomID,
+            serializedJSON: JSON.stringify(action),
+          },
+        })
+        // do not remove this .then the app will literally break
+        .then((d) => {});
+    }
 
     action.meta.fromServer = true;
     socket.broadcast.to(action.meta.roomID).emit('shared action', action);

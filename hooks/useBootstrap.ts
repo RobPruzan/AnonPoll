@@ -11,7 +11,8 @@ import { useDispatch } from 'react-redux';
 
 export const useBootstrap = () => {
   const roomID = useRoomID();
-  const apiURL = window.location.origin + '/api';
+  const apiURL =
+    typeof window !== 'undefined' ? window.location.origin : '' + '/api';
 
   const pQueue = useTransactionQueueContext().pQueueRef.current;
   const room = useAppSelector((store) =>

@@ -17,7 +17,8 @@ const AdminLogin = (props: Props) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   // asserted
-  const apiEndpointURL = window.location.origin + '/api';
+  const apiEndpointURL =
+    typeof window !== 'undefined' ? window.location.origin : '' + '/api';
 
   useSession();
 

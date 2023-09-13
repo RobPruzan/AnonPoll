@@ -119,7 +119,10 @@ export const socketMiddleware =
             }
             console.log('fetching');
             dispatch(NetworkActions.setRoomState(INITIATED_FETCH));
-            const apiURL = window.location.origin + '/api';
+            const apiURL =
+              typeof window !== 'undefined'
+                ? window.location.origin
+                : '' + '/api';
 
             fetch(apiURL + '/bootstrap', {
               method: 'POST',

@@ -36,7 +36,8 @@ export const authenticateRawJsonRes = (
 };
 export const useSession = () => {
   const userContext = useContext(UserContext);
-  const apiURL = window.location.origin + '/api';
+  const apiURL =
+    typeof window !== 'undefined' ? window.location.origin : '' + '/api';
   useEffect(() => {
     run(async () => {
       const requestOptions = {
